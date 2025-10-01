@@ -1,11 +1,11 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, Suspense, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "../../hooks/useAuth";
 
-export default function ResetPasswordPage() {
+function ResetPasswordInner() {
   const { resetPassword, isLoading } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -107,5 +107,13 @@ export default function ResetPasswordPage() {
         <Link href="/login" className="font-medium text-emerald-600 hover:underline">กลับไปเข้าสู่ระบบ</Link>
       </div>
     </div>
+  );
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={<div className="mx-auto w-full max-w-lg rounded-3xl border border-emerald-100 bg-white/70 p-8 text-center text-sm text-emerald-700">กำลังโหลด...</div>}>
+      <ResetPasswordInner />
+    </Suspense>
   );
 }

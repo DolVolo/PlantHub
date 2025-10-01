@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, Suspense, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "../../hooks/useAuth";
@@ -11,7 +11,7 @@ const roleOptions: Array<{ label: string; value: AuthUser["role"]; description: 
   { label: "ผู้ขาย", value: "seller", description: "เปิดร้านและเพิ่มสินค้าได้" },
 ];
 
-export default function RegisterPage() {
+function RegisterInner() {
   const { register, isLoading } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -147,5 +147,13 @@ export default function RegisterPage() {
         มีบัญชีอยู่แล้ว? <Link href="/login" className="font-medium text-emerald-600 hover:underline">เข้าสู่ระบบ</Link>
       </p>
     </div>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={<div className="mx-auto w-full max-w-lg rounded-3xl border border-emerald-100 bg-white/70 p-8 text-center text-sm text-emerald-700">กำลังโหลด...</div>}>
+      <RegisterInner />
+    </Suspense>
   );
 }
