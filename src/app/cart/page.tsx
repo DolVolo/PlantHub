@@ -6,7 +6,7 @@ import { useProducts } from "../hooks/useProducts";
 
 export default function CartPage() {
   const { items, updateQuantity, removeItem, subtotal } = useBasket();
-  const { products } = useProducts();
+  const { products, status, error, fetchProducts } = useProducts();
 
   const cartItems = items
     .map((item) => {
@@ -15,6 +15,33 @@ export default function CartPage() {
       return { ...item, product };
     })
     .filter((value): value is { productId: string; quantity: number; product: (typeof products)[number] } => value !== null);
+
+  if (status === "idle" || status === "loading") {
+    return (
+      <div className="space-y-6 rounded-3xl border border-emerald-100 bg-white/80 p-10 text-center text-emerald-900/70">
+        <p>กำลังโหลดตะกร้าสินค้า...</p>
+        <div className="flex justify-center gap-3">
+          {Array.from({ length: 3 }).map((_, index) => (
+            <div key={index} className="h-28 w-28 animate-pulse rounded-2xl bg-emerald-100/60" />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-4 rounded-3xl border border-red-100 bg-red-50/70 p-10 text-center text-red-700">
+        <p>ไม่สามารถโหลดข้อมูลสินค้าเพื่อแสดงในตะกร้าได้</p>
+        <button
+          onClick={() => fetchProducts({ force: true })}
+          className="rounded-full bg-red-500 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-red-600"
+        >
+          ลองใหม่อีกครั้ง
+        </button>
+      </div>
+    );
+  }
 
   if (cartItems.length === 0) {
     return (

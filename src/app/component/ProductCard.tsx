@@ -13,11 +13,14 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product }: ProductCardProps) {
-  const { user } = useAuth();
+  const { user, isLoading } = useAuth();
   const { addItem } = useBasket();
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+  const [imgError, setImgError] = useState(false);
 
   const handleAddToBasket = () => {
+    if (isLoading) return;
+
     if (!user) {
       setShowLoginPrompt(true);
       return;
@@ -30,9 +33,10 @@ export function ProductCard({ product }: ProductCardProps) {
     <div className="group flex h-full flex-col overflow-hidden rounded-3xl border border-emerald-100 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
       <Link href={`/product/${product.slug}`} className="relative aspect-[4/3]">
         <Image
-          src={product.imageUrl}
+          src={imgError ? "/plant-placeholder.svg" : product.imageUrl}
           alt={product.name}
           fill
+          onError={() => setImgError(true)}
           className="object-cover transition duration-500 group-hover:scale-105"
           sizes="(min-width: 1024px) 300px, 50vw"
           priority={product.featured}
@@ -63,9 +67,10 @@ export function ProductCard({ product }: ProductCardProps) {
           </div>
           <button
             onClick={handleAddToBasket}
-            className="rounded-full bg-emerald-500 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-emerald-600"
+            disabled={isLoading}
+            className="rounded-full bg-emerald-500 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-emerald-600 disabled:cursor-not-allowed disabled:bg-emerald-300"
           >
-            ใส่ตะกร้า
+            {isLoading ? "กรุณารอสักครู่" : "ใส่ตะกร้า"}
           </button>
         </div>
       </div>

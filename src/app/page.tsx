@@ -39,7 +39,7 @@ function filterProducts(
 }
 
 export default function Home() {
-  const { products } = useProducts();
+  const { products, status, error, fetchProducts } = useProducts();
   const [keyword, setKeyword] = useState("");
   const [category, setCategory] = useState<"all" | TreeProduct["category"]>("all");
   const [careLevel, setCareLevel] = useState<"all" | TreeProduct["careLevel"]>("all");
@@ -49,6 +49,8 @@ export default function Home() {
     () => filterProducts(products, { keyword, category, careLevel, tags }),
     [category, careLevel, keyword, products, tags],
   );
+
+  const isLoading = status === "idle" || status === "loading";
 
   return (
     <div className="space-y-10">
@@ -91,7 +93,28 @@ export default function Home() {
         onTagsChange={setTags}
       />
 
-      <ProductGrid products={filteredProducts} />
+      {isLoading ? (
+        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+          {Array.from({ length: 6 }).map((_, index) => (
+            <div
+              key={index}
+              className="h-80 animate-pulse rounded-3xl border border-emerald-100 bg-white/60"
+            />
+          ))}
+        </div>
+      ) : error ? (
+        <div className="space-y-4 rounded-3xl border border-red-100 bg-red-50/60 p-8 text-red-700">
+          <p>ไม่สามารถโหลดรายการสินค้าได้ในขณะนี้</p>
+          <button
+            onClick={() => fetchProducts({ force: true })}
+            className="rounded-full bg-red-500 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-red-600"
+          >
+            ลองใหม่อีกครั้ง
+          </button>
+        </div>
+      ) : (
+        <ProductGrid products={filteredProducts} />
+      )}
     </div>
   );
 }

@@ -14,7 +14,7 @@ const navLinks = [
 
 export function Header() {
   const pathname = usePathname();
-  const { user, logout } = useAuth();
+  const { user, logout, isLoading } = useAuth();
   const { items } = useBasket();
 
   return (
@@ -47,7 +47,9 @@ export function Header() {
               </span>
             ) : null}
           </Link>
-          {user ? (
+          {isLoading ? (
+            <span className="text-emerald-600">กำลังโหลด...</span>
+          ) : user ? (
             <button
               onClick={logout}
               className="rounded-full border border-emerald-200 px-3 py-1.5 text-emerald-700 transition hover:bg-emerald-100"
@@ -55,12 +57,20 @@ export function Header() {
               ออกจากระบบ
             </button>
           ) : (
-            <Link
-              href="/login"
-              className="rounded-full bg-emerald-500 px-3 py-1.5 font-medium text-white shadow-sm transition hover:bg-emerald-600"
-            >
-              เข้าสู่ระบบ
-            </Link>
+            <div className="flex items-center gap-3">
+              <Link
+                href="/register"
+                className="rounded-full border border-emerald-200 px-3 py-1.5 text-emerald-700 transition hover:bg-emerald-100"
+              >
+                สมัครสมาชิก
+              </Link>
+              <Link
+                href="/login"
+                className="rounded-full bg-emerald-500 px-3 py-1.5 font-medium text-white shadow-sm transition hover:bg-emerald-600"
+              >
+                เข้าสู่ระบบ
+              </Link>
+            </div>
           )}
         </div>
       </div>

@@ -48,9 +48,9 @@ const defaultForm: NewProductForm = {
 
 export default function SellerDashboardPage() {
   const { user } = useAuth();
-  const { products, addProduct } = useProducts();
+  const { products, addProduct, status, error: productError, fetchProducts } = useProducts();
   const [form, setForm] = useState<NewProductForm>(defaultForm);
-  const [error, setError] = useState<string | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
   const sellerProducts = useMemo(() => {
@@ -58,22 +58,33 @@ export default function SellerDashboardPage() {
     return products.filter((product) => product.seller.id === user.id);
   }, [products, user]);
 
+  const isLoadingProducts = status === "idle" || status === "loading";
+
   if (!user) {
     return <LoginDialog onClose={() => window.history.back()} />;
   }
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    setError(null);
+    setFormError(null);
     setSuccess(null);
 
     if (!user) {
-      setError("กรุณาเข้าสู่ระบบ");
+      setFormError("กรุณาเข้าสู่ระบบ");
+      return;
+    }
+
+    if (isLoadingProducts) {
+      setFormError("ระบบกำลังดึงข้อมูลสินค้า กรุณารอสักครู่");
+      return;
+    }
+    if (status === "error") {
+      setFormError("ไม่สามารถเพิ่มสินค้าได้ในขณะนี้ กรุณาลองโหลดข้อมูลสินค้าใหม่อีกครั้ง");
       return;
     }
 
     if (!form.imageUrl) {
-      setError("กรุณาเพิ่มลิงก์รูปภาพสินค้าก่อนเผยแพร่");
+      setFormError("กรุณาเพิ่มลิงก์รูปภาพสินค้าก่อนเผยแพร่");
       return;
     }
 
@@ -109,9 +120,14 @@ export default function SellerDashboardPage() {
       water: form.water,
     };
 
-    addProduct(newProduct);
-    setSuccess("เพิ่มสินค้าใหม่เรียบร้อยแล้ว");
-    setForm(defaultForm);
+    try {
+      await addProduct(newProduct);
+      setSuccess("เพิ่มสินค้าใหม่เรียบร้อยแล้ว");
+      setForm(defaultForm);
+    } catch (error) {
+      console.error("เพิ่มสินค้าไม่สำเร็จ", error);
+      setFormError("ไม่สามารถเพิ่มสินค้าได้ กรุณาลองใหม่อีกครั้ง");
+    }
   };
 
   return (
@@ -257,7 +273,7 @@ export default function SellerDashboardPage() {
               ล้างฟอร์ม
             </button>
           </div>
-          {error ? <p className="text-sm text-red-600">{error}</p> : null}
+          {formError ? <p className="text-sm text-red-600">{formError}</p> : null}
           {success ? <p className="text-sm text-emerald-700">{success}</p> : null}
         </form>
       </section>
@@ -268,31 +284,48 @@ export default function SellerDashboardPage() {
           <div className="mt-4 grid gap-4 text-sm text-emerald-900/80">
             <div className="rounded-2xl bg-emerald-50/80 p-4">
               <p className="text-xs uppercase tracking-wide text-emerald-600">จำนวนสินค้า</p>
-              <p className="mt-1 text-2xl font-semibold text-emerald-900">{sellerProducts.length} รายการ</p>
+              <p className="mt-1 text-2xl font-semibold text-emerald-900">
+                {isLoadingProducts ? "-" : `${sellerProducts.length} รายการ`}
+              </p>
             </div>
             <div className="rounded-2xl bg-emerald-50/80 p-4">
               <p className="text-xs uppercase tracking-wide text-emerald-600">สต็อกคงเหลือรวม</p>
               <p className="mt-1 text-2xl font-semibold text-emerald-900">
-                {sellerProducts.reduce((total, product) => total + product.inStock, 0)} ต้น
+                {isLoadingProducts ? "-" : `${sellerProducts.reduce((total, product) => total + product.inStock, 0)} ต้น`}
               </p>
             </div>
           </div>
         </div>
         <div className="space-y-3 rounded-3xl border border-emerald-100 bg-white/80 p-6 shadow-sm">
           <h3 className="text-lg font-semibold text-emerald-900">รายการสินค้า</h3>
-          <ul className="space-y-3 text-sm text-emerald-900/80">
-            {sellerProducts.length === 0 ? (
-              <li>ยังไม่มีสินค้าในร้านของคุณ</li>
+          <div className="space-y-3 text-sm text-emerald-900/80">
+            {isLoadingProducts ? (
+              <p className="animate-pulse text-emerald-700">กำลังโหลดข้อมูลสินค้า...</p>
+            ) : status === "error" ? (
+              <div className="space-y-3">
+                <p className="text-red-600">ไม่สามารถโหลดข้อมูลสินค้าได้: {productError}</p>
+                <button
+                  type="button"
+                  onClick={() => fetchProducts({ force: true })}
+                  className="rounded-full border border-emerald-200 px-4 py-2 font-medium text-emerald-700 transition hover:bg-emerald-50"
+                >
+                  ลองโหลดใหม่อีกครั้ง
+                </button>
+              </div>
+            ) : sellerProducts.length === 0 ? (
+              <p>ยังไม่มีสินค้าในร้านของคุณ</p>
             ) : (
-              sellerProducts.map((product) => (
-                <li key={product.id} className="rounded-2xl border border-emerald-100 p-3">
-                  <p className="font-medium text-emerald-900">{product.name}</p>
-                  <p>ราคา ฿{product.price.toLocaleString()} • สต็อก {product.inStock}</p>
-                  <p className="text-xs text-emerald-900/60">Slug: {product.slug}</p>
-                </li>
-              ))
+              <ul className="space-y-3">
+                {sellerProducts.map((product) => (
+                  <li key={product.id} className="rounded-2xl border border-emerald-100 p-3">
+                    <p className="font-medium text-emerald-900">{product.name}</p>
+                    <p>ราคา ฿{product.price.toLocaleString()} • สต็อก {product.inStock}</p>
+                    <p className="text-xs text-emerald-900/60">Slug: {product.slug}</p>
+                  </li>
+                ))}
+              </ul>
             )}
-          </ul>
+          </div>
         </div>
       </section>
     </div>

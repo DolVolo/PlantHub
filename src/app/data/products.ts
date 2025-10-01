@@ -98,9 +98,9 @@ export const initialTreeProducts: TreeProduct[] = [
     category: "bonsai",
     tags: ["collectible", "bonsai", "gift"],
     imageUrl:
-      "https://images.unsplash.com/photo-1524594154907-0a12f672d709?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=1200&q=80",
     thumbnailUrl:
-      "https://images.unsplash.com/photo-1524594154907-0a12f672d709?auto=format&fit=crop&w=600&q=60",
+      "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=600&q=60",
     seller: {
       id: "bonsai-club",
       name: "Bonsai Club Thailand",

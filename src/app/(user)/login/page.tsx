@@ -2,10 +2,11 @@
 
 import { FormEvent, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { useAuth } from "../../hooks/useAuth";
 
 export default function LoginPage() {
-  const { login } = useAuth();
+  const { login, isLoading } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectTo = searchParams.get("redirectTo") ?? "/";
@@ -58,12 +59,21 @@ export default function LoginPage() {
         {error ? <p className="text-sm text-red-600">{error}</p> : null}
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || isLoading}
           className="w-full rounded-full bg-emerald-500 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-600 disabled:cursor-not-allowed disabled:bg-emerald-300"
         >
-          {loading ? "กำลังเข้าสู่ระบบ..." : "เข้าสู่ระบบ"}
+          {loading || isLoading ? "กำลังเข้าสู่ระบบ..." : "เข้าสู่ระบบ"}
         </button>
       </form>
+      <div className="flex flex-wrap justify-between text-xs text-emerald-900/70">
+        <Link href="/forgot-password" className="hover:underline">ลืมรหัสผ่าน?</Link>
+        <span>
+          ยังไม่มีบัญชี?{" "}
+          <Link href="/register" className="font-medium text-emerald-600 hover:underline">
+            สมัครสมาชิก
+          </Link>
+        </span>
+      </div>
     </div>
   );
 }

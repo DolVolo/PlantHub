@@ -18,10 +18,11 @@ const defaultForm: CustomerDetails = {
 
 export default function CheckoutPage() {
   const { items, subtotal, clearBasket } = useBasket();
-  const { products } = useProducts();
+  const { products, status, error, fetchProducts } = useProducts();
   const [form, setForm] = useState(defaultForm);
   const [paymentSlipName, setPaymentSlipName] = useState("ไม่มีไฟล์แนบ");
   const [orderSuccess, setOrderSuccess] = useState(false);
+  const [orderError, setOrderError] = useState<string | null>(null);
 
   const totalQuantity = useMemo(() => items.reduce((sum, item) => sum + item.quantity, 0), [items]);
 
@@ -33,9 +34,21 @@ export default function CheckoutPage() {
   }, [form.deliveryMethod, totalQuantity]);
 
   const totalCost = subtotal + estimatedShipping;
-
+  const isLoadingProducts = status === "idle" || status === "loading";
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    setOrderError(null);
+
+    if (items.length === 0) {
+      setOrderError("กรุณาเลือกสินค้าก่อนทำการสั่งซื้อ");
+      return;
+    }
+
+    if (status !== "success") {
+      setOrderError("ไม่สามารถยืนยันคำสั่งซื้อได้เนื่องจากข้อมูลสินค้ายังไม่พร้อม กรุณาลองอีกครั้ง");
+      return;
+    }
+
     setOrderSuccess(true);
     clearBasket();
   };
@@ -211,6 +224,7 @@ export default function CheckoutPage() {
               <button
                 type="submit"
                 className="rounded-full bg-emerald-500 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-600"
+                disabled={items.length === 0 || isLoadingProducts}
               >
                 ส่งคำสั่งซื้อ
               </button>
@@ -225,6 +239,7 @@ export default function CheckoutPage() {
                 ล้างข้อมูล
               </button>
             </div>
+            {orderError ? <p className="rounded-2xl bg-red-100/70 px-4 py-3 text-red-700">{orderError}</p> : null}
             {orderSuccess ? (
               <p className="rounded-2xl bg-emerald-100/80 px-4 py-3 text-emerald-700">
                 ขอบคุณสำหรับคำสั่งซื้อ ทีมงานจะติดต่อกลับเพื่อยืนยันและนัดจัดส่ง
@@ -237,20 +252,45 @@ export default function CheckoutPage() {
       <aside className="space-y-6">
         <div className="rounded-3xl border border-emerald-100 bg-white/90 p-6 shadow-lg">
           <h2 className="text-xl font-semibold text-emerald-900">สรุปออเดอร์</h2>
-          <ul className="mt-4 space-y-3 text-sm text-emerald-900/80">
-            {items.map((item) => {
-              const product = products.find((product) => product.id === item.productId);
-              if (!product) return null;
-              return (
-                <li key={item.productId} className="flex items-center justify-between">
-                  <span>
-                    {product.name} × {item.quantity}
-                  </span>
-                  <span>฿{(product.price * item.quantity).toLocaleString()}</span>
-                </li>
-              );
-            })}
-          </ul>
+          <div className="mt-4 text-sm text-emerald-900/80">
+            {isLoadingProducts ? (
+              <p className="animate-pulse text-emerald-700">กำลังดึงข้อมูลสินค้า...</p>
+            ) : status === "error" ? (
+              <div className="space-y-3 text-sm">
+                <p className="text-red-600">ไม่สามารถโหลดข้อมูลสินค้าได้: {error}</p>
+                <button
+                  type="button"
+                  onClick={() => fetchProducts({ force: true })}
+                  className="rounded-full border border-emerald-200 px-4 py-2 font-medium text-emerald-700 transition hover:bg-emerald-50"
+                >
+                  ลองใหม่อีกครั้ง
+                </button>
+              </div>
+            ) : items.length === 0 ? (
+              <p>ยังไม่มีสินค้าในตะกร้า</p>
+            ) : (
+              <ul className="space-y-3">
+                {items.map((item) => {
+                  const product = products.find((product) => product.id === item.productId);
+                  if (!product) {
+                    return (
+                      <li key={item.productId} className="rounded-2xl bg-amber-50/80 p-3 text-amber-800">
+                        สินค้าในคำสั่งซื้อถูกนำออกจากคลังแล้ว กรุณาตรวจสอบอีกครั้ง
+                      </li>
+                    );
+                  }
+                  return (
+                    <li key={item.productId} className="flex items-center justify-between">
+                      <span>
+                        {product.name} × {item.quantity}
+                      </span>
+                      <span>฿{(product.price * item.quantity).toLocaleString()}</span>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </div>
           <div className="mt-4 space-y-2 border-t border-emerald-100 pt-4 text-sm text-emerald-900">
             <p className="flex items-center justify-between">
               <span>ยอดรวมสินค้า</span>

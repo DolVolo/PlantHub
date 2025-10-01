@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useParams } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { LoginDialog } from "../../component/dialogs";
 import { useAuth } from "../../hooks/useAuth";
 import { useBasket } from "../../hooks/useBasket";
@@ -11,14 +11,54 @@ import { useProducts } from "../../hooks/useProducts";
 export default function ProductDetailPage() {
   const params = useParams<{ slug: string | string[] }>();
   const slug = Array.isArray(params.slug) ? params.slug[0] : params.slug;
-  const { getProductBySlug } = useProducts();
-  const product = useMemo(() => (slug ? getProductBySlug(slug) : undefined), [getProductBySlug, slug]);
+  const { status, error, getProductBySlug, fetchProducts } = useProducts();
+  const [notFound, setNotFound] = useState(false);
+  const product = slug ? getProductBySlug(slug) : undefined;
   const { user } = useAuth();
   const { addItem } = useBasket();
   const [quantity, setQuantity] = useState(1);
   const [showLogin, setShowLogin] = useState(false);
+  const [imgError, setImgError] = useState(false);
 
-  if (!product) {
+  useEffect(() => {
+    if (!slug) return;
+    if (status === "idle") {
+      fetchProducts().catch((error) => console.error("Failed to fetch products", error));
+    }
+  }, [fetchProducts, slug, status]);
+
+  useEffect(() => {
+    if (!slug) return;
+    if (status === "success" && !product) {
+      setNotFound(true);
+    }
+  }, [product, slug, status]);
+
+  if (status === "loading" || status === "idle") {
+    return (
+      <div className="space-y-6">
+        <div className="h-[420px] animate-pulse rounded-3xl bg-emerald-100/40" />
+        <div className="h-64 animate-pulse rounded-3xl bg-white/60" />
+        <div className="h-64 animate-pulse rounded-3xl bg-white/60" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-4 rounded-3xl border border-red-100 bg-red-50/70 p-10 text-center text-red-700">
+        <p>ไม่สามารถโหลดรายละเอียดสินค้าได้</p>
+        <button
+          onClick={() => fetchProducts({ force: true })}
+          className="rounded-full bg-red-500 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-red-600"
+        >
+          ลองใหม่อีกครั้ง
+        </button>
+      </div>
+    );
+  }
+
+  if (notFound || !product) {
     return (
       <div className="rounded-3xl border border-dashed border-emerald-200 bg-white/70 p-10 text-center text-emerald-900/70">
         ไม่พบสินค้าที่คุณต้องการ อาจมีการอัปเดตสต็อกหรือสินค้าไม่พร้อมจำหน่ายในขณะนี้
@@ -41,7 +81,14 @@ export default function ProductDetailPage() {
     <div className="grid gap-10 md:grid-cols-[minmax(0,_1.2fr)_1fr]">
       <div className="space-y-6">
         <div className="relative h-[420px] overflow-hidden rounded-3xl">
-          <Image src={product.imageUrl} alt={product.name} fill className="object-cover" sizes="(min-width: 1024px) 50vw, 100vw" />
+          <Image
+            src={imgError ? "/plant-placeholder.svg" : product.imageUrl}
+            alt={product.name}
+            fill
+            onError={() => setImgError(true)}
+            className="object-cover"
+            sizes="(min-width: 1024px) 50vw, 100vw"
+          />
         </div>
         <div className="rounded-3xl border border-emerald-100 bg-white/80 p-6 shadow-sm">
           <h2 className="text-lg font-semibold text-emerald-900">รายละเอียดสินค้า</h2>
