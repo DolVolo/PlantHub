@@ -59,12 +59,27 @@ export async function POST(request: Request) {
         console.log("✅ [ForgotPassword] User found in Firebase");
         userEmail = firebaseUser.email;
         
+        // Determine the continue URL (must be valid HTTPS or localhost)
+        const appUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.VERCEL_URL;
+        let continueUrl = "https://plant-hub-5g3m.vercel.app/login"; // Default fallback
+        
+        if (appUrl) {
+          // Ensure it's a full URL with protocol
+          if (appUrl.startsWith("http://") || appUrl.startsWith("https://")) {
+            continueUrl = `${appUrl}/login`;
+          } else {
+            continueUrl = `https://${appUrl}/login`;
+          }
+        }
+        
+        console.log("🔗 [ForgotPassword] Continue URL:", continueUrl);
+        
         // Use Firebase's built-in password reset
         const resetLink = await adminAuth().generatePasswordResetLink(firebaseUser.email, {
-          url: `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/login`,
+          url: continueUrl,
         });
         
-        console.log("🔗 [ForgotPassword] Firebase reset link generated");
+        console.log("✅ [ForgotPassword] Firebase reset link generated");
         
         // Send the reset email with Firebase link
         const emailResult = await sendPasswordResetEmail({
