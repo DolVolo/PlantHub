@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 // Quick SMTP test script - run with: node test-smtp.js
 const nodemailer = require("nodemailer");
 

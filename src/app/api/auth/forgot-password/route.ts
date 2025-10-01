@@ -49,15 +49,12 @@ export async function POST(request: Request) {
   console.log("🔍 [ForgotPassword] Issuing token...");
   console.log("🔍 [ForgotPassword] USE_FIREBASE:", USE_FIREBASE);
   
-  let userEmail: string | null = null;
-  
   if (USE_FIREBASE) {
     try {
       console.log("🔥 [ForgotPassword] Checking Firebase for user...");
       const firebaseUser = await getFirebaseUserByEmail(email.trim().toLowerCase());
       if (firebaseUser) {
         console.log("✅ [ForgotPassword] User found in Firebase");
-        userEmail = firebaseUser.email;
         
         // Determine the continue URL (must be valid HTTPS or localhost)
         const appUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.VERCEL_URL;
@@ -99,8 +96,35 @@ export async function POST(request: Request) {
         console.log("ℹ️ [ForgotPassword] User not found in Firebase");
       }
     } catch (error) {
-      console.error("❌ [ForgotPassword] Firebase error:", error);
-      // Fall through to in-memory store
+      const firebaseError = error as {
+        errorInfo?: {
+          code?: string;
+          message?: string;
+        };
+      };
+
+      const errorCode = firebaseError.errorInfo?.code;
+      const errorMessage = firebaseError.errorInfo?.message;
+
+      if (errorMessage === "RESET_PASSWORD_EXCEED_LIMIT") {
+        console.warn("⚠️ [ForgotPassword] Firebase reset limit reached for", email);
+        return NextResponse.json(
+          {
+            message:
+              "คุณขอรีเซ็ตรหัสผ่านบ่อยเกินไป กรุณารอประมาณ 1 ชั่วโมงก่อนลองใหม่อีกครั้ง หรือเช็กอีเมลก่อนหน้า",
+            emailDelivered: false,
+            reason: "RESET_PASSWORD_EXCEED_LIMIT",
+          },
+          { status: 200 },
+        );
+      }
+
+      console.error("❌ [ForgotPassword] Firebase error:", {
+        code: errorCode,
+        message: errorMessage,
+        stack: error instanceof Error ? error.stack : String(error),
+      });
+      // Fall through to in-memory store (best effort)
     }
   }
   
