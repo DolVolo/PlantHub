@@ -72,12 +72,15 @@ export interface SendPasswordResetEmailResult {
 
 export async function sendPasswordResetEmail({ to, token, expiresAt }: SendPasswordResetEmailInput): Promise<SendPasswordResetEmailResult> {
   console.log("📧 [Mailer] sendPasswordResetEmail called for:", to?.substring(0, 5) + "***");
+  console.log("📧 [Mailer] Token (first 50 chars):", token?.substring(0, 50) + "...");
   const config = resolveMailerConfig();
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
-  const resetUrl = `${appUrl.replace(/\/$/, "")}/reset-password?token=${token}`;
+  
+  // If token is a full Firebase URL, use it directly as reset URL
+  const resetUrl = token.startsWith("http") ? token : `${appUrl.replace(/\/$/, "")}/reset-password?token=${token}`;
 
   console.log("🔍 [Mailer] Config resolved:", config ? "✅ Yes" : "❌ No");
-  console.log("🔍 [Mailer] APP_URL:", appUrl);
+  console.log("🔍 [Mailer] Reset URL:", resetUrl.substring(0, 50) + "...");
   
   if (!config) {
     const message = "ยังไม่ได้ตั้งค่า SMTP credentials (.env.local) โทเค็นถูกบันทึกไว้บนหน้าจอสำหรับทดสอบ";
