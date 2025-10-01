@@ -105,6 +105,35 @@ export async function getFirebaseUserById(uid: string): Promise<AuthUser | null>
 }
 
 /**
+ * Get user by email from Firebase
+ */
+export async function getFirebaseUserByEmail(email: string): Promise<AuthUser | null> {
+  try {
+    const userRecord = await adminAuth().getUserByEmail(email);
+    const userDoc = await adminFirestore().collection("users").doc(userRecord.uid).get();
+
+    if (!userDoc.exists) {
+      return null;
+    }
+
+    const data = userDoc.data();
+    return {
+      id: userRecord.uid,
+      email: userRecord.email!,
+      name: data?.name || userRecord.displayName || "Unknown",
+      role: data?.role || "buyer",
+    };
+  } catch (error) {
+    const errorWithCode = error as { code?: string };
+    if (errorWithCode.code === "auth/user-not-found") {
+      return null;
+    }
+    console.error("[Firebase] Get user by email failed:", error);
+    return null;
+  }
+}
+
+/**
  * Update user profile in Firestore
  */
 export async function updateFirebaseUser(

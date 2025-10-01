@@ -3,6 +3,11 @@ import { getResetTokenTTLMinutes, issuePasswordResetToken } from "../users-store
 // Note: extensionless import so Next.js/TypeScript can resolve the .ts source.
 import { checkRateLimit, enforceAll } from "../rate-limit";
 import { sendPasswordResetEmail } from "../mailer";
+import { getFirebaseUserByEmail } from "../firebase-auth";
+import { adminAuth } from "../../../lib/firebaseAdmin";
+
+// Toggle between Firebase (true) and in-memory (false)
+const USE_FIREBASE = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID ? true : false;
 
 interface ForgotPasswordResponse {
   message: string;
@@ -42,6 +47,49 @@ export async function POST(request: Request) {
   }
 
   console.log("🔍 [ForgotPassword] Issuing token...");
+  console.log("🔍 [ForgotPassword] USE_FIREBASE:", USE_FIREBASE);
+  
+  let userEmail: string | null = null;
+  
+  if (USE_FIREBASE) {
+    try {
+      console.log("🔥 [ForgotPassword] Checking Firebase for user...");
+      const firebaseUser = await getFirebaseUserByEmail(email.trim().toLowerCase());
+      if (firebaseUser) {
+        console.log("✅ [ForgotPassword] User found in Firebase");
+        userEmail = firebaseUser.email;
+        
+        // Use Firebase's built-in password reset
+        const resetLink = await adminAuth().generatePasswordResetLink(firebaseUser.email, {
+          url: `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/login`,
+        });
+        
+        console.log("🔗 [ForgotPassword] Firebase reset link generated");
+        
+        // Send the reset email with Firebase link
+        const emailResult = await sendPasswordResetEmail({
+          to: firebaseUser.email,
+          token: resetLink, // Pass the full Firebase link as token
+          expiresAt: new Date(Date.now() + 60 * 60 * 1000), // Firebase links expire in 1 hour
+        });
+        
+        console.log("📧 [ForgotPassword] Email result:", { delivered: emailResult.delivered, error: emailResult.error });
+        
+        return NextResponse.json({
+          message: emailResult.message,
+          resetUrl: resetLink,
+          emailDelivered: emailResult.delivered,
+        }, { status: 200 });
+      } else {
+        console.log("ℹ️ [ForgotPassword] User not found in Firebase");
+      }
+    } catch (error) {
+      console.error("❌ [ForgotPassword] Firebase error:", error);
+      // Fall through to in-memory store
+    }
+  }
+  
+  // Fallback to in-memory store
   const result = issuePasswordResetToken(email.trim().toLowerCase());
   const ttlMinutes = getResetTokenTTLMinutes();
 
