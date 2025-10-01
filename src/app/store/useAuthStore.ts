@@ -7,7 +7,6 @@ import type { AuthUser } from "../types";
 import { 
   signInWithEmailAndPassword, 
   signOut,
-  sendPasswordResetEmail,
   type User
 } from "firebase/auth";
 import { firebaseAuth } from "../lib/firebaseClient";
@@ -106,52 +105,14 @@ export const useAuthStore = create<AuthState>()(
     requestPasswordReset: async (email) => {
       set({ isLoading: true, error: undefined });
       try {
-        if (USE_FIREBASE_CLIENT) {
-          // Firebase client-side password reset
-          const auth = firebaseAuth();
-          const normalizedEmail = email.trim().toLowerCase();
-          try {
-            await sendPasswordResetEmail(auth, normalizedEmail, {
-              url: `${window.location.origin}/login`,
-              handleCodeInApp: false,
-            });
-            set({ isLoading: false });
-            return {
-              message: "ส่งอีเมลรีเซ็ตรหัสผ่านแล้ว กรุณาตรวจสอบอีเมลของคุณ",
-            };
-          } catch (firebaseError) {
-            const errorWithCode = firebaseError as { code?: string; message?: string };
-            if (errorWithCode.code === "auth/user-not-found") {
-              // Mirror best practice: do not reveal whether email exists
-              console.info("[Auth] Password reset requested for non-existent email.", normalizedEmail);
-              set({ isLoading: false });
-              return {
-                message: "หากอีเมลอยู่ในระบบ เราได้ส่งลิงก์รีเซ็ตรหัสผ่านให้แล้ว",
-              };
-            }
-
-            console.warn("[Auth] Firebase password reset failed, attempting API fallback", {
-              code: errorWithCode.code,
-              error: errorWithCode.message,
-            });
-
-            // Fallback to internal API (uses token + optional SMTP)
-            const response = await axios.post<{ message: string; token?: string; expiresAt?: string }>(
-              "/api/auth/forgot-password",
-              { email: normalizedEmail }
-            );
-            set({ isLoading: false });
-            return response.data;
-          }
-        } else {
-          // Fallback: custom email
-          const response = await axios.post<{ message: string; token?: string; expiresAt?: string }>(
-            "/api/auth/forgot-password",
-            { email }
-          );
-          set({ isLoading: false });
-          return response.data;
-        }
+        // Always use API route for password reset (Firebase Admin SDK + SMTP)
+        // This ensures emails are sent through our configured SMTP transport
+        const response = await axios.post<{ message: string; token?: string; expiresAt?: string; resetUrl?: string; emailDelivered?: boolean }>(
+          "/api/auth/forgot-password",
+          { email: email.trim().toLowerCase() }
+        );
+        set({ isLoading: false });
+        return response.data;
       } catch (error) {
         const message = extractErrorMessage(error, "ไม่สามารถส่งอีเมลรีเซ็ตรหัสผ่านได้");
         set({ error: message, isLoading: false });
