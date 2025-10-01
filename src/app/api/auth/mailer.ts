@@ -71,13 +71,17 @@ export interface SendPasswordResetEmailResult {
 }
 
 export async function sendPasswordResetEmail({ to, token, expiresAt }: SendPasswordResetEmailInput): Promise<SendPasswordResetEmailResult> {
+  console.log("📧 [Mailer] sendPasswordResetEmail called for:", to?.substring(0, 5) + "***");
   const config = resolveMailerConfig();
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
   const resetUrl = `${appUrl.replace(/\/$/, "")}/reset-password?token=${token}`;
 
+  console.log("🔍 [Mailer] Config resolved:", config ? "✅ Yes" : "❌ No");
+  console.log("🔍 [Mailer] APP_URL:", appUrl);
+  
   if (!config) {
     const message = "ยังไม่ได้ตั้งค่า SMTP credentials (.env.local) โทเค็นถูกบันทึกไว้บนหน้าจอสำหรับทดสอบ";
-    console.warn("[PlantHub] Unable to send email - missing SMTP credentials (.env.local not loaded?)");
+    console.warn("[Mailer] Unable to send email - missing SMTP credentials");
     return {
       delivered: false,
       message,
@@ -86,19 +90,23 @@ export async function sendPasswordResetEmail({ to, token, expiresAt }: SendPassw
   }
 
   try {
+    console.log("📧 [Mailer] Creating transport...");
     const transporterInstance = getTransporter(config);
     const ttlMinutes = Math.max(1, Math.round((expiresAt.getTime() - Date.now()) / 60000));
 
     // Optional connectivity verification before sending (lightweight noop)
     if (process.env.SMTP_VERIFY !== "false") {
       try {
+        console.log("🔍 [Mailer] Verifying connection...");
         await transporterInstance.verify();
+        console.log("✅ [Mailer] Connection verified");
       } catch (verifyError) {
         const msg = verifyError instanceof Error ? verifyError.message : String(verifyError);
         console.error("[Mailer] SMTP verify failed", msg);
       }
     }
 
+    console.log("📧 [Mailer] Sending email to:", to?.substring(0, 5) + "***");
     await transporterInstance.sendMail({
       from: `PlantHub ✉️ <${config.user}>`,
       to,
@@ -119,6 +127,7 @@ export async function sendPasswordResetEmail({ to, token, expiresAt }: SendPassw
       `,
     });
 
+    console.log("✅ [Mailer] Email sent successfully");
     return {
       delivered: true,
       message: "ส่งอีเมลตั้งรหัสผ่านใหม่เรียบร้อย",
@@ -126,7 +135,7 @@ export async function sendPasswordResetEmail({ to, token, expiresAt }: SendPassw
     };
   } catch (error) {
     const errMessage = error instanceof Error ? error.message : "ไม่ทราบสาเหตุ";
-    console.error("[PlantHub] Failed to send reset email", {
+    console.error("[Mailer] Failed to send reset email", {
       error: errMessage,
       host: config?.host,
       port: config?.port,
