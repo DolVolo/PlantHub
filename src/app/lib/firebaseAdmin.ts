@@ -8,19 +8,32 @@ import { getFirestore as getAdminFirestore } from "firebase-admin/firestore";
 const projectId = process.env.FIREBASE_PROJECT_ID;
 
 // Service account JSON fields (never expose these on client!)
-const serviceAccount = {
+interface ServiceAccountLike {
+  projectId?: string;
+  clientEmail?: string;
+  privateKey?: string;
+}
+
+const serviceAccount: ServiceAccountLike = {
   projectId: projectId,
   clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-  // Private key may contain literal '\n' characters when pasted from env var; convert them.
   privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
 };
 
 export function getFirebaseAdminApp(): AdminApp {
   if (!getApps().length) {
-    initializeApp({
-      credential: cert(serviceAccount as any),
-      projectId,
-    });
+    if (!serviceAccount.clientEmail || !serviceAccount.privateKey || !serviceAccount.projectId) {
+      console.warn("[Firebase-Admin] Missing service account fields. Admin SDK not fully initialized.");
+    } else {
+      initializeApp({
+        credential: cert({
+          projectId: serviceAccount.projectId,
+          clientEmail: serviceAccount.clientEmail,
+          privateKey: serviceAccount.privateKey,
+        }),
+        projectId,
+      });
+    }
   }
   return getApps()[0] as AdminApp;
 }

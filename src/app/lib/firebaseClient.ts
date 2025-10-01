@@ -2,10 +2,12 @@
 // Use this for auth (client side), Firestore read (public data), etc.
 
 import { initializeApp, getApps, type FirebaseApp } from "firebase/app";
+import type { FirebaseOptions } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
-const firebaseConfig = {
+// Strongly typed Firebase client config
+const firebaseConfig: FirebaseOptions = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
   databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL,
@@ -18,9 +20,11 @@ const firebaseConfig = {
 export function getFirebaseApp(): FirebaseApp {
   if (!getApps().length) {
     if (!firebaseConfig.apiKey || !firebaseConfig.projectId) {
-      console.warn("[Firebase] Missing required public config values. Check your NEXT_PUBLIC_FIREBASE_* env vars.");
+      console.warn(
+        "[Firebase] Missing required public config values. Check your NEXT_PUBLIC_FIREBASE_* env vars.",
+      );
     }
-    initializeApp(firebaseConfig as any);
+    initializeApp(firebaseConfig);
   }
   return getApps()[0]!;
 }
