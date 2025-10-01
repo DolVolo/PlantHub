@@ -97,16 +97,21 @@ export async function POST(request: Request) {
       }
     } catch (error) {
       const firebaseError = error as {
+        code?: string;
+        message?: string;
         errorInfo?: {
           code?: string;
           message?: string;
         };
       };
 
-      const errorCode = firebaseError.errorInfo?.code;
-      const errorMessage = firebaseError.errorInfo?.message;
+      const errorCode = firebaseError.errorInfo?.code ?? firebaseError.code;
+      const errorMessage = firebaseError.errorInfo?.message ?? firebaseError.message;
 
-      if (errorMessage === "RESET_PASSWORD_EXCEED_LIMIT") {
+      const messageIncludesResetLimit = typeof errorMessage === "string" && errorMessage.includes("RESET_PASSWORD_EXCEED_LIMIT");
+      const codeIsResetLimit = errorCode === "RESET_PASSWORD_EXCEED_LIMIT";
+
+      if (messageIncludesResetLimit || codeIsResetLimit) {
         console.warn("⚠️ [ForgotPassword] Firebase reset limit reached for", email);
         return NextResponse.json(
           {
@@ -124,7 +129,15 @@ export async function POST(request: Request) {
         message: errorMessage,
         stack: error instanceof Error ? error.stack : String(error),
       });
-      // Fall through to in-memory store (best effort)
+
+      return NextResponse.json(
+        {
+          message: "ไม่สามารถส่งอีเมลรีเซ็ตรหัสผ่านได้ในขณะนี้ กรุณาลองใหม่ภายหลัง",
+          emailDelivered: false,
+          reason: errorCode ?? "FIREBASE_ERROR",
+        },
+        { status: 500 },
+      );
     }
   }
   
