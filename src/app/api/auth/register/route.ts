@@ -9,7 +9,10 @@ export async function POST(request: Request) {
   console.log("🔍 [Register] USE_FIREBASE:", USE_FIREBASE);
   console.log("🔍 [Register] Has FIREBASE_PROJECT_ID:", !!process.env.FIREBASE_PROJECT_ID);
   console.log("🔍 [Register] Has FIREBASE_CLIENT_EMAIL:", !!process.env.FIREBASE_CLIENT_EMAIL);
-  console.log("🔍 [Register] Has FIREBASE_PRIVATE_KEY:", !!process.env.FIREBASE_PRIVATE_KEY);
+  console.log(
+    "🔍 [Register] FIREBASE_PRIVATE_KEY length:",
+    process.env.FIREBASE_PRIVATE_KEY ? process.env.FIREBASE_PRIVATE_KEY.length : 0,
+  );
   
   const { name, email, password, role } = (await request.json()) as {
     name?: string;
@@ -54,8 +57,16 @@ export async function POST(request: Request) {
     return NextResponse.json(user, { status: 201 });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "ไม่สามารถสร้างบัญชีได้";
-    console.error("❌ [Register] Error:", error);
-    console.error("❌ [Register] Error details:", JSON.stringify(error, null, 2));
+    console.error("❌ [Register] Error message:", message);
+    if (error instanceof Error) {
+      console.error("❌ [Register] Error stack:", error.stack);
+      const errorWithCode = error as Error & { code?: unknown };
+      if (typeof errorWithCode.code !== "undefined") {
+        console.error("❌ [Register] Error code:", errorWithCode.code);
+      }
+    } else {
+      console.error("❌ [Register] Error (non-Error object):", JSON.stringify(error));
+    }
     return NextResponse.json({ message }, { status: 500 });
   }
 }

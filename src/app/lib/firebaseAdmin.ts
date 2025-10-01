@@ -24,6 +24,19 @@ export function getFirebaseAdminApp(): AdminApp {
   if (!getApps().length) {
     if (!serviceAccount.clientEmail || !serviceAccount.privateKey || !serviceAccount.projectId) {
       console.warn("[Firebase-Admin] Missing service account fields. Admin SDK not fully initialized.");
+      console.warn(
+        "[Firebase-Admin] Debug info:",
+        JSON.stringify(
+          {
+            hasProjectId: !!serviceAccount.projectId,
+            hasClientEmail: !!serviceAccount.clientEmail,
+            privateKeyLength: serviceAccount.privateKey?.length ?? 0,
+            privateKeyFirstLine: serviceAccount.privateKey?.split("\n")[0] ?? null,
+          },
+          null,
+          2,
+        ),
+      );
     } else {
       initializeApp({
         credential: cert({
