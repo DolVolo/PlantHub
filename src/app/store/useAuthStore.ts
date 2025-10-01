@@ -109,14 +109,27 @@ export const useAuthStore = create<AuthState>()(
         if (USE_FIREBASE_CLIENT) {
           // Firebase client-side password reset
           const auth = firebaseAuth();
-          await sendPasswordResetEmail(auth, email.trim().toLowerCase(), {
-            url: `${window.location.origin}/login`,
-            handleCodeInApp: false,
-          });
-          set({ isLoading: false });
-          return {
-            message: "ส่งอีเมลรีเซ็ตรหัสผ่านแล้ว กรุณาตรวจสอบอีเมลของคุณ",
-          };
+          try {
+            await sendPasswordResetEmail(auth, email.trim().toLowerCase(), {
+              url: `${window.location.origin}/login`,
+              handleCodeInApp: false,
+            });
+            set({ isLoading: false });
+            return {
+              message: "ส่งอีเมลรีเซ็ตรหัสผ่านแล้ว กรุณาตรวจสอบอีเมลของคุณ",
+            };
+          } catch (firebaseError) {
+            const errorWithCode = firebaseError as { code?: string };
+            if (errorWithCode.code === "auth/user-not-found") {
+              // Mirror best practice: do not reveal whether email exists
+              console.info("[Auth] Password reset requested for non-existent email.", email);
+              set({ isLoading: false });
+              return {
+                message: "หากอีเมลอยู่ในระบบ เราได้ส่งลิงก์รีเซ็ตรหัสผ่านให้แล้ว",
+              };
+            }
+            throw firebaseError;
+          }
         } else {
           // Fallback: custom email
           const response = await axios.post<{ message: string; token?: string; expiresAt?: string }>(
