@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, Suspense, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "../../hooks/useAuth";
 
@@ -12,7 +12,7 @@ interface ResetResponse {
   emailDelivered?: boolean;
 }
 
-export default function ForgotPasswordPage() {
+function ForgotPasswordInner() {
   const { requestPasswordReset, isLoading } = useAuth();
   const [email, setEmail] = useState("");
   const [result, setResult] = useState<ResetResponse | null>(null);
@@ -104,5 +104,13 @@ export default function ForgotPasswordPage() {
         <Link href="/reset-password" className="font-medium text-emerald-600 hover:underline">มีโทเค็นแล้ว? ตั้งรหัสผ่านใหม่</Link>
       </div>
     </div>
+  );
+}
+
+export default function ForgotPasswordPage() {
+  return (
+    <Suspense fallback={<div className="mx-auto w-full max-w-lg rounded-3xl border border-emerald-100 bg-white/70 p-8 text-center text-sm text-emerald-700">กำลังโหลด...</div>}>
+      <ForgotPasswordInner />
+    </Suspense>
   );
 }

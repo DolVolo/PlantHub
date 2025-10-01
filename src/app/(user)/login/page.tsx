@@ -1,11 +1,11 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "../../hooks/useAuth";
 
-export default function LoginPage() {
+function LoginFormInner() {
   const { login, isLoading } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -75,5 +75,13 @@ export default function LoginPage() {
         </span>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="mx-auto w-full max-w-md rounded-3xl border border-emerald-100 bg-white/70 p-8 text-center text-sm text-emerald-700">กำลังเตรียมแบบฟอร์ม...</div>}>
+      <LoginFormInner />
+    </Suspense>
   );
 }
