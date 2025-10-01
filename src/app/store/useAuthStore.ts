@@ -109,8 +109,9 @@ export const useAuthStore = create<AuthState>()(
         if (USE_FIREBASE_CLIENT) {
           // Firebase client-side password reset
           const auth = firebaseAuth();
+          const normalizedEmail = email.trim().toLowerCase();
           try {
-            await sendPasswordResetEmail(auth, email.trim().toLowerCase(), {
+            await sendPasswordResetEmail(auth, normalizedEmail, {
               url: `${window.location.origin}/login`,
               handleCodeInApp: false,
             });
@@ -119,16 +120,28 @@ export const useAuthStore = create<AuthState>()(
               message: "ส่งอีเมลรีเซ็ตรหัสผ่านแล้ว กรุณาตรวจสอบอีเมลของคุณ",
             };
           } catch (firebaseError) {
-            const errorWithCode = firebaseError as { code?: string };
+            const errorWithCode = firebaseError as { code?: string; message?: string };
             if (errorWithCode.code === "auth/user-not-found") {
               // Mirror best practice: do not reveal whether email exists
-              console.info("[Auth] Password reset requested for non-existent email.", email);
+              console.info("[Auth] Password reset requested for non-existent email.", normalizedEmail);
               set({ isLoading: false });
               return {
                 message: "หากอีเมลอยู่ในระบบ เราได้ส่งลิงก์รีเซ็ตรหัสผ่านให้แล้ว",
               };
             }
-            throw firebaseError;
+
+            console.warn("[Auth] Firebase password reset failed, attempting API fallback", {
+              code: errorWithCode.code,
+              error: errorWithCode.message,
+            });
+
+            // Fallback to internal API (uses token + optional SMTP)
+            const response = await axios.post<{ message: string; token?: string; expiresAt?: string }>(
+              "/api/auth/forgot-password",
+              { email: normalizedEmail }
+            );
+            set({ isLoading: false });
+            return response.data;
           }
         } else {
           // Fallback: custom email
