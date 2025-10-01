@@ -61,32 +61,27 @@ function ForgotPasswordInner() {
           <div className="space-y-3 rounded-2xl bg-emerald-50/80 p-4 text-sm text-emerald-900/80">
             <p className="font-medium text-emerald-800">{result.message}</p>
             {result.emailDelivered === false ? (
-              <p className="text-amber-700">⚠️ ระบบยังไม่ได้ส่งอีเมล (โหมดเดโม)</p>
+              <>
+                <p className="text-amber-700">⚠️ ระบบยังไม่ได้ส่งอีเมล (โหมดเดโม)</p>
+                {result.resetUrl ? (
+                  <div className="mt-3 flex flex-col gap-2">
+                    <a
+                      href={result.resetUrl}
+                      className="inline-block rounded-full bg-emerald-600 px-6 py-3 text-center font-semibold text-white shadow-sm transition hover:bg-emerald-700"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      🔗 เปิดลิงก์รีเซ็ตรหัสผ่าน
+                    </a>
+                    <details className="text-xs text-emerald-700/70">
+                      <summary className="cursor-pointer hover:text-emerald-800">แสดงลิงก์เต็ม</summary>
+                      <p className="mt-2 break-all font-mono text-[10px]">{result.resetUrl}</p>
+                    </details>
+                  </div>
+                ) : null}
+              </>
             ) : result.emailDelivered ? (
               <p className="text-emerald-700">✅ ส่งอีเมลแล้ว โปรดตรวจสอบกล่องจดหมายหรือสแปม</p>
-            ) : null}
-            {result.resetUrl ? (
-              <div className="mt-3 flex flex-col gap-2">
-                <a
-                  href={result.resetUrl}
-                  className="inline-block rounded-full bg-emerald-600 px-6 py-3 text-center font-semibold text-white shadow-sm transition hover:bg-emerald-700"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  🔗 เปิดลิงก์รีเซ็ตรหัสผ่าน
-                </a>
-                <details className="text-xs text-emerald-700/70">
-                  <summary className="cursor-pointer hover:text-emerald-800">แสดงลิงก์เต็ม</summary>
-                  <p className="mt-2 break-all font-mono text-[10px]">{result.resetUrl}</p>
-                </details>
-              </div>
-            ) : result.token && !result.resetUrl ? (
-              <>
-                <p className="text-xs">
-                  โทเค็น: <span className="font-mono text-emerald-900">{result.token}</span>
-                </p>
-                {result.expiresAt ? <p className="text-xs">หมดอายุ: {new Date(result.expiresAt).toLocaleString()}</p> : null}
-              </>
             ) : null}
           </div>
         ) : null}
