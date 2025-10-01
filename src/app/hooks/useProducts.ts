@@ -19,6 +19,7 @@ export function useProducts(autoFetch: boolean = true) {
     }
   }, [autoFetch, fetchProducts, status]);
 
+  
   return {
     products,
     status,
