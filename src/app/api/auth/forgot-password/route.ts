@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getResetTokenTTLMinutes, issuePasswordResetToken } from "../users-store";
-import { checkRateLimit, enforceAll } from "../rate-limit.js";
+// Note: extensionless import so Next.js/TypeScript can resolve the .ts source.
+import { checkRateLimit, enforceAll } from "../rate-limit";
 import { sendPasswordResetEmail } from "../mailer";
 
 interface ForgotPasswordResponse {
