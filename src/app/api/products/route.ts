@@ -1,6 +1,13 @@
 import { NextResponse } from "next/server";
 import { initialTreeProducts } from "../../data/products";
 import type { TreeProduct } from "../../types";
+import {
+  getFirestoreProducts,
+  createFirestoreProduct,
+} from "./firestore-products";
+
+// Toggle between Firestore (true) and in-memory (false)
+const USE_FIRESTORE = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID ? true : false;
 
 let products: TreeProduct[] = [...initialTreeProducts];
 
@@ -13,7 +20,16 @@ const slugify = (value: string) =>
     .replace(/^-+|-+$/g, "");
 
 export async function GET() {
-  return NextResponse.json(products);
+  try {
+    if (USE_FIRESTORE) {
+      const firestoreProducts = await getFirestoreProducts();
+      return NextResponse.json(firestoreProducts);
+    }
+    return NextResponse.json(products);
+  } catch (error) {
+    console.error("[Products API] GET error:", error);
+    return NextResponse.json({ message: "ไม่สามารถโหลดสินค้าได้" }, { status: 500 });
+  }
 }
 
 export async function POST(request: Request) {
@@ -25,10 +41,6 @@ export async function POST(request: Request) {
 
   const id = payload.id ?? `product-${Date.now()}`;
   const slug = payload.slug ?? slugify(payload.name);
-
-  if (products.some((product) => product.id === id || product.slug === slug)) {
-    return NextResponse.json({ message: "มีสินค้านี้อยู่แล้ว" }, { status: 409 });
-  }
 
   const newProduct: TreeProduct = {
     id,
@@ -66,7 +78,26 @@ export async function POST(request: Request) {
     water: payload.water ?? "medium",
   };
 
-  products = [...products, newProduct];
-
-  return NextResponse.json(newProduct, { status: 201 });
+  try {
+    if (USE_FIRESTORE) {
+      // Check if product exists in Firestore
+      const existing = await getFirestoreProducts();
+      if (existing.some((product) => product.id === id || product.slug === slug)) {
+        return NextResponse.json({ message: "มีสินค้านี้อยู่แล้ว" }, { status: 409 });
+      }
+      
+      const created = await createFirestoreProduct(newProduct);
+      return NextResponse.json(created, { status: 201 });
+    } else {
+      // In-memory fallback
+      if (products.some((product) => product.id === id || product.slug === slug)) {
+        return NextResponse.json({ message: "มีสินค้านี้อยู่แล้ว" }, { status: 409 });
+      }
+      products = [...products, newProduct];
+      return NextResponse.json(newProduct, { status: 201 });
+    }
+  } catch (error) {
+    console.error("[Products API] POST error:", error);
+    return NextResponse.json({ message: "ไม่สามารถสร้างสินค้าได้" }, { status: 500 });
+  }
 }
