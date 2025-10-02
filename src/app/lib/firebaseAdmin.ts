@@ -4,6 +4,7 @@
 import { cert, getApps, initializeApp, type App as AdminApp } from "firebase-admin/app";
 import { getAuth as getAdminAuth } from "firebase-admin/auth";
 import { getFirestore as getAdminFirestore } from "firebase-admin/firestore";
+import { getStorage as getAdminStorage } from "firebase-admin/storage";
 
 const projectId = process.env.FIREBASE_PROJECT_ID;
 
@@ -45,6 +46,7 @@ export function getFirebaseAdminApp(): AdminApp {
           privateKey: serviceAccount.privateKey,
         }),
         projectId,
+        storageBucket: process.env.FIREBASE_STORAGE_BUCKET || `${projectId}.appspot.com`,
       });
     }
   }
@@ -53,3 +55,4 @@ export function getFirebaseAdminApp(): AdminApp {
 
 export const adminAuth = () => getAdminAuth(getFirebaseAdminApp());
 export const adminFirestore = () => getAdminFirestore(getFirebaseAdminApp());
+export const adminStorage = () => getAdminStorage(getFirebaseAdminApp());

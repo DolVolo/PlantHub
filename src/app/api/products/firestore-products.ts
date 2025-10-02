@@ -47,20 +47,18 @@ export async function getFirestoreProduct(id: string): Promise<Product | null> {
 /**
  * Create a new product in Firestore
  */
-export async function createFirestoreProduct(product: Omit<Product, "id">): Promise<Product> {
+export async function createFirestoreProduct(product: Product): Promise<Product> {
   try {
-    const docRef = await adminFirestore()
-      .collection(PRODUCTS_COLLECTION)
-      .add({
-        ...product,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      });
-
-    return {
-      id: docRef.id,
+    // Use the provided ID or generate a new one
+    const docRef = adminFirestore().collection(PRODUCTS_COLLECTION).doc(product.id);
+    
+    await docRef.set({
       ...product,
-    };
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    });
+
+    return product;
   } catch (error) {
     console.error("[Firestore] Create product failed:", error);
     throw new Error("ไม่สามารถสร้างสินค้าได้");

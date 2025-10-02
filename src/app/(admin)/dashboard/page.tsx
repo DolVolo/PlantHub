@@ -53,6 +53,7 @@ export default function SellerDashboardPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   const sellerProducts = useMemo(() => {
     if (!user) return [];
@@ -196,6 +197,51 @@ export default function SellerDashboardPage() {
     }
   };
 
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith("image/")) {
+      setFormError("กรุณาเลือกไฟล์รูปภาพเท่านั้น");
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    const maxSize = 5 * 1024 * 1024;
+    if (file.size > maxSize) {
+      setFormError("ขนาดไฟล์ต้องไม่เกิน 5MB");
+      return;
+    }
+
+    setUploadingImage(true);
+    setFormError(null);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const response = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "ไม่สามารถอัปโหลดรูปภาพได้");
+      }
+
+      setForm((prev) => ({ ...prev, imageUrl: data.url }));
+      setSuccess("อัปโหลดรูปภาพสำเร็จ");
+    } catch (error) {
+      console.error("อัปโหลดรูปภาพไม่สำเร็จ", error);
+      setFormError(error instanceof Error ? error.message : "ไม่สามารถอัปโหลดรูปภาพได้");
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
   return (
     <div className="space-y-8">
       <section className="rounded-3xl border border-emerald-100 bg-white/80 p-8 shadow-lg">
@@ -313,16 +359,58 @@ export default function SellerDashboardPage() {
                 <option value="high">มาก</option>
               </select>
             </label>
-            <label className="flex flex-col gap-2 text-sm text-emerald-900/80 md:col-span-2">
-              ลิงก์รูปภาพสินค้า *
-              <input
-                required
-                value={form.imageUrl}
-                onChange={(event) => setForm((prev) => ({ ...prev, imageUrl: event.target.value }))}
-                placeholder="https://"
-                className="rounded-2xl border border-emerald-200 px-4 py-2 text-sm focus:border-emerald-400 focus:outline-none"
-              />
-            </label>
+            <div className="flex flex-col gap-2 text-sm text-emerald-900/80 md:col-span-2">
+              <label>รูปภาพสินค้า *</label>
+              <div className="space-y-3">
+                <div className="flex gap-3">
+                  <label className="flex-1">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      disabled={uploadingImage}
+                      className="hidden"
+                      id="image-upload"
+                    />
+                    <div
+                      className="flex cursor-pointer items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-emerald-300 bg-emerald-50/50 px-4 py-3 text-sm transition hover:border-emerald-400 hover:bg-emerald-50"
+                      onClick={() => document.getElementById("image-upload")?.click()}
+                    >
+                      {uploadingImage ? (
+                        <>
+                          <span className="animate-spin">⏳</span>
+                          <span>กำลังอัปโหลด...</span>
+                        </>
+                      ) : (
+                        <>
+                          <span>📁</span>
+                          <span>อัปโหลดรูปจากอุปกรณ์</span>
+                        </>
+                      )}
+                    </div>
+                  </label>
+                </div>
+                <input
+                  required
+                  value={form.imageUrl}
+                  onChange={(event) => setForm((prev) => ({ ...prev, imageUrl: event.target.value }))}
+                  placeholder="หรือใส่ลิงก์รูปภาพ (https://...)"
+                  className="w-full rounded-2xl border border-emerald-200 px-4 py-2 text-sm focus:border-emerald-400 focus:outline-none"
+                />
+                {form.imageUrl && (
+                  <div className="rounded-2xl border border-emerald-100 p-3">
+                    <img
+                      src={form.imageUrl}
+                      alt="ตัวอย่างรูปสินค้า"
+                      className="h-32 w-32 rounded-xl object-cover"
+                      onError={(e) => {
+                        e.currentTarget.src = "https://via.placeholder.com/150?text=Invalid+Image";
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
           <div className="flex flex-wrap gap-3">
             <button
