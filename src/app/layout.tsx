@@ -29,14 +29,6 @@ export const metadata: Metadata = {
     "ต้นไม้ในร่ม",
     "บอนไซ",
   ],
-  icons: {
-    icon: [
-      { url: "/image/icon.png?v=1", sizes: "32x32", type: "image/png" },
-      { url: "/image/icon.png?v=1", sizes: "16x16", type: "image/png" },
-    ],
-    shortcut: "/image/icon.png?v=1",
-    apple: "/image/icon.png?v=1",
-  },
   openGraph: {
     title: "PlantHub - แพลตฟอร์มร้านค้าต้นไม้ครบวงจร",
     description:
@@ -45,14 +37,6 @@ export const metadata: Metadata = {
     siteName: "PlantHub",
     locale: "th_TH",
     type: "website",
-    images: [
-      {
-        url: "/image/icon.png?v=1",
-        width: 512,
-        height: 512,
-        alt: "PlantHub logo",
-      },
-    ],
   },
   metadataBase: new URL("https://planthub.example.com"),
 };
@@ -64,13 +48,6 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="th">
-      <head>
-        <link rel="icon" href="/image/icon.png?v=1" sizes="any" />
-        <link rel="icon" type="image/png" sizes="32x32" href="/image/icon.png?v=1" />
-        <link rel="icon" type="image/png" sizes="16x16" href="/image/icon.png?v=1" />
-        <link rel="shortcut icon" href="/image/icon.png?v=1" />
-        <link rel="apple-touch-icon" sizes="180x180" href="/image/icon.png?v=1" />
-      </head>
       <body className={`${geistSans.variable} ${geistMono.variable} min-h-screen bg-emerald-50 antialiased`}>
         <div className="flex min-h-screen flex-col">
           <Header />
