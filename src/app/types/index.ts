@@ -81,3 +81,16 @@ export interface AuthUser {
   role: "buyer" | "seller" | "admin";
   profileImageUrl?: string;
 }
+
+export interface SavedPaymentInfo {
+  id: string;
+  userId: string;
+  name: string; // Name for this saved info (e.g., "บ้าน", "ที่ทำงาน")
+  firstName: string;
+  lastName: string;
+  address: string;
+  phone: string;
+  isDefault?: boolean;
+  createdAt: string;
+  updatedAt: string;
+}

@@ -1,9 +1,11 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useMemo, useState, useEffect } from "react";
+import axios from "axios";
 import { useBasket } from "../hooks/useBasket";
 import { useProducts } from "../hooks/useProducts";
-import type { CustomerDetails } from "../types";
+import { useAuth } from "../hooks/useAuth";
+import type { CustomerDetails, SavedPaymentInfo } from "../types";
 
 const defaultForm: CustomerDetails = {
   firstName: "",
@@ -19,10 +21,97 @@ const defaultForm: CustomerDetails = {
 export default function CheckoutPage() {
   const { items, subtotal, clearBasket } = useBasket();
   const { products, status, error, fetchProducts } = useProducts();
+  const { user } = useAuth();
   const [form, setForm] = useState(defaultForm);
   const [paymentSlipName, setPaymentSlipName] = useState("ไม่มีไฟล์แนบ");
   const [orderSuccess, setOrderSuccess] = useState(false);
   const [orderError, setOrderError] = useState<string | null>(null);
+  
+  // Saved payment info state
+  const [savedPaymentInfoList, setSavedPaymentInfoList] = useState<SavedPaymentInfo[]>([]);
+  const [selectedPaymentInfoId, setSelectedPaymentInfoId] = useState<string | null>(null);
+  const [showNewAddressForm, setShowNewAddressForm] = useState(false);
+  const [saveThisInfo, setSaveThisInfo] = useState(false);
+  const [newInfoName, setNewInfoName] = useState("");
+  const [isLoadingSavedInfo, setIsLoadingSavedInfo] = useState(false);
+
+  // Fetch saved payment info when user is available
+  useEffect(() => {
+    if (user) {
+      fetchSavedPaymentInfo();
+    }
+  }, [user]);
+
+  const fetchSavedPaymentInfo = async () => {
+    if (!user) return;
+    
+    setIsLoadingSavedInfo(true);
+    try {
+      const response = await axios.get<SavedPaymentInfo[]>(
+        `/api/payment-info?userId=${user.id}`
+      );
+      setSavedPaymentInfoList(response.data);
+      
+      // Auto-select default if available
+      const defaultInfo = response.data.find((info) => info.isDefault);
+      if (defaultInfo && !selectedPaymentInfoId) {
+        handleSelectSavedInfo(defaultInfo.id);
+      }
+    } catch (error) {
+      console.error("Failed to fetch saved payment info:", error);
+    } finally {
+      setIsLoadingSavedInfo(false);
+    }
+  };
+
+  const handleSelectSavedInfo = (infoId: string) => {
+    const selectedInfo = savedPaymentInfoList.find((info) => info.id === infoId);
+    if (selectedInfo) {
+      setForm((prev) => ({
+        ...prev,
+        firstName: selectedInfo.firstName,
+        lastName: selectedInfo.lastName,
+        address: selectedInfo.address,
+        phone: selectedInfo.phone,
+      }));
+      setSelectedPaymentInfoId(infoId);
+      setShowNewAddressForm(false);
+    }
+  };
+
+  const handleUseNewAddress = () => {
+    setForm((prev) => ({
+      ...prev,
+      firstName: "",
+      lastName: "",
+      address: "",
+      phone: "",
+    }));
+    setSelectedPaymentInfoId(null);
+    setShowNewAddressForm(true);
+  };
+
+  const handleSavePaymentInfo = async () => {
+    if (!user || !newInfoName.trim()) return;
+
+    try {
+      await axios.post("/api/payment-info", {
+        userId: user.id,
+        name: newInfoName.trim(),
+        firstName: form.firstName,
+        lastName: form.lastName,
+        address: form.address,
+        phone: form.phone,
+        isDefault: savedPaymentInfoList.length === 0, // First one becomes default
+      });
+      
+      await fetchSavedPaymentInfo();
+      setNewInfoName("");
+      setSaveThisInfo(false);
+    } catch (error) {
+      console.error("Failed to save payment info:", error);
+    }
+  };
 
   const totalQuantity = useMemo(() => items.reduce((sum, item) => sum + item.quantity, 0), [items]);
 
@@ -49,6 +138,11 @@ export default function CheckoutPage() {
       return;
     }
 
+    // Save payment info if requested
+    if (saveThisInfo && user && showNewAddressForm) {
+      handleSavePaymentInfo();
+    }
+
     setOrderSuccess(true);
     clearBasket();
   };
@@ -61,7 +155,72 @@ export default function CheckoutPage() {
           กรุณากรอกข้อมูลสำหรับการจัดส่งและติดต่อ - ข้อมูลของคุณจะถูกเก็บเป็นความลับและใช้เพื่อการจัดส่งเท่านั้น
         </p>
         <form onSubmit={handleSubmit} className="mt-6 space-y-6">
-          <div className="grid gap-4 md:grid-cols-2">
+          {/* Saved Payment Info Selection */}
+          {user && savedPaymentInfoList.length > 0 && (
+            <div className="rounded-3xl border border-emerald-100 bg-white/80 p-6 shadow-sm">
+              <h2 className="text-lg font-semibold text-emerald-900">เลือกที่อยู่ที่บันทึกไว้</h2>
+              <p className="mt-2 text-sm text-emerald-900/70">
+                เลือกข้อมูลที่คุณเคยบันทึกไว้ หรือเพิ่มที่อยู่ใหม่
+              </p>
+              
+              {isLoadingSavedInfo ? (
+                <div className="mt-4 text-center text-sm text-emerald-600">กำลังโหลด...</div>
+              ) : (
+                <div className="mt-4 space-y-3">
+                  {savedPaymentInfoList.map((info) => (
+                    <label
+                      key={info.id}
+                      className={`flex cursor-pointer items-start gap-3 rounded-2xl border-2 bg-white p-4 transition ${
+                        selectedPaymentInfoId === info.id
+                          ? "border-emerald-500 bg-emerald-50/50"
+                          : "border-emerald-200 hover:border-emerald-300"
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="savedAddress"
+                        checked={selectedPaymentInfoId === info.id}
+                        onChange={() => handleSelectSavedInfo(info.id)}
+                        className="mt-1"
+                      />
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <p className="font-semibold text-emerald-900">{info.name}</p>
+                          {info.isDefault && (
+                            <span className="rounded-full bg-emerald-500 px-2 py-0.5 text-xs text-white">
+                              ค่าเริ่มต้น
+                            </span>
+                          )}
+                        </div>
+                        <p className="mt-1 text-sm text-emerald-900">
+                          {info.firstName} {info.lastName}
+                        </p>
+                        <p className="mt-1 text-sm text-emerald-700">{info.address}</p>
+                        <p className="mt-1 text-sm text-emerald-600">โทร: {info.phone}</p>
+                      </div>
+                    </label>
+                  ))}
+                  
+                  <button
+                    type="button"
+                    onClick={handleUseNewAddress}
+                    className={`w-full rounded-2xl border-2 border-dashed p-4 text-sm font-medium transition ${
+                      showNewAddressForm
+                        ? "border-emerald-500 bg-emerald-50/50 text-emerald-700"
+                        : "border-emerald-200 text-emerald-600 hover:border-emerald-400 hover:bg-emerald-50"
+                    }`}
+                  >
+                    + ใช้ที่อยู่ใหม่
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Show form only if new address or no saved addresses */}
+          {(!user || savedPaymentInfoList.length === 0 || showNewAddressForm) && (
+            <>
+              <div className="grid gap-4 md:grid-cols-2">
             <label className="flex flex-col gap-2 text-sm text-emerald-900/80">
               ชื่อ *
               <input
@@ -193,6 +352,35 @@ export default function CheckoutPage() {
               </fieldset>
             </div>
           </div>
+
+          {/* Save this info checkbox - only for new addresses */}
+          {user && showNewAddressForm && (
+            <div className="rounded-2xl border border-emerald-100 bg-emerald-50/30 p-4">
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={saveThisInfo}
+                  onChange={(e) => setSaveThisInfo(e.target.checked)}
+                  className="mt-1"
+                />
+                <div className="flex-1">
+                  <p className="font-medium text-emerald-900">บันทึกข้อมูลนี้สำหรับครั้งถัดไป</p>
+                  {saveThisInfo && (
+                    <input
+                      type="text"
+                      value={newInfoName}
+                      onChange={(e) => setNewInfoName(e.target.value)}
+                      placeholder="ตั้งชื่อสำหรับที่อยู่นี้ (เช่น บ้าน, ที่ทำงาน)"
+                      className="mt-2 w-full rounded-xl border border-emerald-200 px-3 py-2 text-sm focus:border-emerald-400 focus:outline-none"
+                      required={saveThisInfo}
+                    />
+                  )}
+                </div>
+              </label>
+            </div>
+          )}
+            </>
+          )}
 
           <label className="flex flex-col gap-2 text-sm text-emerald-900/80">
             รูปภาพสลิปการชำระเงิน

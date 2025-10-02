@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import axios from "axios";
 import { useAuth } from "../hooks/useAuth";
 import { LoginDialog } from "../component/dialogs";
+import type { SavedPaymentInfo } from "../types";
 
 export default function SettingsPage() {
   const { user, updateUserProfile } = useAuth();
@@ -19,6 +20,64 @@ export default function SettingsPage() {
     name: user?.name || "",
     profileImageUrl: "",
   });
+
+  // Payment info state
+  const [savedPaymentInfoList, setSavedPaymentInfoList] = useState<SavedPaymentInfo[]>([]);
+  const [isLoadingPaymentInfo, setIsLoadingPaymentInfo] = useState(false);
+  const [editingPaymentId, setEditingPaymentId] = useState<string | null>(null);
+
+  // Fetch payment info when switching to account tab
+  useEffect(() => {
+    if (activeTab === "account" && user) {
+      fetchPaymentInfo();
+    }
+  }, [activeTab, user]);
+
+  const fetchPaymentInfo = async () => {
+    if (!user) return;
+    
+    setIsLoadingPaymentInfo(true);
+    try {
+      const response = await axios.get<SavedPaymentInfo[]>(
+        `/api/payment-info?userId=${user.id}`
+      );
+      setSavedPaymentInfoList(response.data);
+    } catch (err) {
+      console.error("Failed to fetch payment info:", err);
+      setError("ไม่สามารถโหลดข้อมูลที่บันทึกไว้ได้");
+    } finally {
+      setIsLoadingPaymentInfo(false);
+    }
+  };
+
+  const handleDeletePaymentInfo = async (id: string) => {
+    if (!confirm("คุณต้องการลบข้อมูลนี้ใช่หรือไม่?")) return;
+
+    try {
+      await axios.delete(`/api/payment-info/${id}`);
+      await fetchPaymentInfo();
+      setSuccess("ลบข้อมูลเรียบร้อยแล้ว");
+    } catch (err) {
+      console.error("Failed to delete payment info:", err);
+      setError("ไม่สามารถลบข้อมูลได้");
+    }
+  };
+
+  const handleSetDefault = async (id: string) => {
+    if (!user) return;
+
+    try {
+      await axios.put(`/api/payment-info/${id}`, {
+        userId: user.id,
+        isDefault: true,
+      });
+      await fetchPaymentInfo();
+      setSuccess("ตั้งค่าที่อยู่เริ่มต้นเรียบร้อยแล้ว");
+    } catch (err) {
+      console.error("Failed to set default:", err);
+      setError("ไม่สามารถตั้งค่าได้");
+    }
+  };
 
   const handleEdit = () => {
     setProfileForm({
@@ -356,12 +415,65 @@ export default function SettingsPage() {
 
         {activeTab === "account" && (
           <div className="rounded-3xl border border-emerald-100 bg-white/80 p-8 shadow-lg">
-            <h2 className="text-xl font-semibold text-emerald-900">การจัดการบัญชี</h2>
-            <div className="mt-6 space-y-4">
-              <p className="text-sm text-emerald-700">
-                ฟีเจอร์การเปลี่ยนรหัสผ่านและการจัดการบัญชีจะเพิ่มในเร็วๆ นี้
-              </p>
-            </div>
+            <h2 className="text-xl font-semibold text-emerald-900">ข้อมูลที่บันทึกไว้</h2>
+            <p className="mt-2 text-sm text-emerald-700">
+              จัดการที่อยู่สำหรับจัดส่งที่คุณบันทึกไว้
+            </p>
+
+            {isLoadingPaymentInfo ? (
+              <div className="mt-6 text-center text-sm text-emerald-600">กำลังโหลด...</div>
+            ) : savedPaymentInfoList.length === 0 ? (
+              <div className="mt-6 rounded-2xl border border-emerald-100 bg-emerald-50/30 p-6 text-center">
+                <p className="text-sm text-emerald-700">ยังไม่มีข้อมูลที่บันทึกไว้</p>
+                <p className="mt-2 text-xs text-emerald-600">
+                  คุณสามารถบันทึกข้อมูลได้เมื่อทำการสั่งซื้อสินค้า
+                </p>
+              </div>
+            ) : (
+              <div className="mt-6 space-y-4">
+                {savedPaymentInfoList.map((info) => (
+                  <div
+                    key={info.id}
+                    className="rounded-2xl border border-emerald-100 bg-white p-4 shadow-sm"
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-semibold text-emerald-900">{info.name}</h3>
+                          {info.isDefault && (
+                            <span className="rounded-full bg-emerald-500 px-2 py-0.5 text-xs text-white">
+                              ค่าเริ่มต้น
+                            </span>
+                          )}
+                        </div>
+                        <p className="mt-2 text-sm text-emerald-900">
+                          {info.firstName} {info.lastName}
+                        </p>
+                        <p className="mt-1 text-sm text-emerald-700">{info.address}</p>
+                        <p className="mt-1 text-sm text-emerald-600">โทร: {info.phone}</p>
+                      </div>
+                      
+                      <div className="flex gap-2">
+                        {!info.isDefault && (
+                          <button
+                            onClick={() => handleSetDefault(info.id)}
+                            className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700 transition hover:bg-emerald-100"
+                          >
+                            ตั้งเป็นค่าเริ่มต้น
+                          </button>
+                        )}
+                        <button
+                          onClick={() => handleDeletePaymentInfo(info.id)}
+                          className="rounded-full bg-red-50 px-3 py-1 text-xs font-medium text-red-600 transition hover:bg-red-100"
+                        >
+                          ลบ
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
