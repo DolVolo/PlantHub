@@ -5,6 +5,7 @@ import { useAuth } from "../../hooks/useAuth";
 import { useProducts } from "../../hooks/useProducts";
 import type { TreeCategory, TreeProduct } from "../../types";
 import { LoginDialog } from "../../component/dialogs";
+import { ShopSettings } from "../../component/ShopSettings";
 
 const categoryOptions: Array<{ value: TreeCategory; label: string }> = [
   { value: "indoor", label: "ต้นไม้ในบ้าน" },
@@ -244,8 +245,12 @@ export default function SellerDashboardPage() {
 
   return (
     <div className="space-y-8">
+      {/* Shop Settings Section */}
+      <ShopSettings ownerId={user.id} />
+
+      {/* Product Management Section */}
       <section className="rounded-3xl border border-emerald-100 bg-white/80 p-8 shadow-lg">
-        <h1 className="text-2xl font-semibold text-emerald-900">ร้านของฉัน</h1>
+        <h1 className="text-2xl font-semibold text-emerald-900">จัดการสินค้า</h1>
         <p className="mt-2 text-sm text-emerald-900/70">
           เพิ่มสินค้าใหม่และตรวจสอบยอดขายได้จากหน้านี้ ติดตามสต็อกต้นไม้ของคุณแบบเรียลไทม์
         </p>

@@ -7,13 +7,17 @@ import { LoginDialog } from "../../component/dialogs";
 import { useAuth } from "../../hooks/useAuth";
 import { useBasket } from "../../hooks/useBasket";
 import { useProducts } from "../../hooks/useProducts";
+import { useShopStore } from "../../store/useShopStore";
+import type { Shop } from "../../types";
 
 export default function ProductDetailPage() {
   const params = useParams<{ slug: string | string[] }>();
   const slug = Array.isArray(params.slug) ? params.slug[0] : params.slug;
   const { status, error, getProductBySlug, fetchProducts } = useProducts();
+  const { fetchShops, shops } = useShopStore();
   const [notFound, setNotFound] = useState(false);
   const product = slug ? getProductBySlug(slug) : undefined;
+  const sellerShop = product ? shops.find((shop: Shop) => shop.ownerId === product.seller.id) : undefined;
   const { user } = useAuth();
   const { addItem } = useBasket();
   const [quantity, setQuantity] = useState(1);
@@ -25,7 +29,9 @@ export default function ProductDetailPage() {
     if (status === "idle") {
       fetchProducts().catch((error) => console.error("Failed to fetch products", error));
     }
-  }, [fetchProducts, slug, status]);
+    // Fetch shops to show shop information
+    fetchShops().catch((error) => console.error("Failed to fetch shops", error));
+  }, [fetchProducts, fetchShops, slug, status]);
 
   useEffect(() => {
     if (!slug) return;
@@ -197,10 +203,32 @@ export default function ProductDetailPage() {
 
         <div className="rounded-3xl border border-emerald-100 bg-white/80 p-6 text-sm text-emerald-900/80">
           <p className="font-semibold text-emerald-900">ข้อมูลผู้ขาย</p>
-          <p className="mt-1 text-emerald-900">{product.seller.name}</p>
-          <p>พื้นที่ : {product.seller.location}</p>
-          <p>ยอดขายทั้งหมด : {product.seller.totalSales.toLocaleString()} รายการ</p>
-          <p>คะแนนรีวิว : ⭐ {product.rating} ({product.reviews} รีวิว)</p>
+          
+          {sellerShop ? (
+            <div className="mt-3 space-y-2">
+              {sellerShop.imageUrl && (
+                <img
+                  src={sellerShop.imageUrl}
+                  alt={sellerShop.name}
+                  className="w-full rounded-xl object-cover h-32 mb-3"
+                />
+              )}
+              <p className="font-medium text-emerald-900">{sellerShop.name}</p>
+              <p className="text-xs text-emerald-700">{sellerShop.description}</p>
+              <p>📍 {sellerShop.location}</p>
+              {sellerShop.phone && <p>📞 {sellerShop.phone}</p>}
+              {sellerShop.openingHours && <p>🕒 {sellerShop.openingHours}</p>}
+              <p>⭐ {sellerShop.rating}/5</p>
+              <p>📦 ยอดขายทั้งหมด : {sellerShop.totalSales.toLocaleString()} รายการ</p>
+            </div>
+          ) : (
+            <div className="mt-3 space-y-1">
+              <p className="text-emerald-900">{product.seller.name}</p>
+              <p>📍 {product.seller.location}</p>
+              <p>📦 ยอดขายทั้งหมด : {product.seller.totalSales.toLocaleString()} รายการ</p>
+              <p>⭐ {product.rating}/5 ({product.reviews} รีวิว)</p>
+            </div>
+          )}
         </div>
       </aside>
 

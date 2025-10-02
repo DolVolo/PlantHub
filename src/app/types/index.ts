@@ -12,6 +12,22 @@ export interface SellerProfile {
   location: string;
   rating: number;
   totalSales: number;
+  shopId?: string; // Link to shop details
+}
+
+export interface Shop {
+  id: string;
+  ownerId: string; // User ID of the shop owner
+  name: string;
+  description: string;
+  location: string;
+  phone?: string;
+  imageUrl?: string;
+  openingHours?: string;
+  rating: number;
+  totalSales: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface TreeProduct {
