@@ -1,13 +1,16 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import { useAuth } from "../hooks/useAuth";
 import { useBasket } from "../hooks/useBasket";
 import { UserProfileDropdown } from "./UserProfileDropdown";
+import { BasketPanel } from "./BasketPanel";
 
 export function Header() {
   const { user, logout, isLoading } = useAuth();
   const { items } = useBasket();
+  const [isBasketOpen, setIsBasketOpen] = useState(false);
 
   return (
     <>
@@ -43,9 +46,9 @@ export function Header() {
       </header>
 
       {/* Floating Cart Button */}
-      <Link
-        href="/cart"
-        className="fixed right-6 top-24 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500 text-white shadow-lg transition hover:bg-emerald-600 hover:scale-110"
+      <button
+        onClick={() => setIsBasketOpen(true)}
+        className="fixed right-6 top-24 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500 text-white shadow-lg transition hover:bg-emerald-600 hover:scale-110"
         title="ตะกร้าสินค้า"
       >
         <svg
@@ -66,7 +69,10 @@ export function Header() {
             {items.length}
           </span>
         )}
-      </Link>
+      </button>
+
+      {/* Basket Panel */}
+      <BasketPanel isOpen={isBasketOpen} onClose={() => setIsBasketOpen(false)} />
     </>
   );
 }
