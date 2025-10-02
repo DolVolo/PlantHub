@@ -54,34 +54,6 @@ export default function Home() {
 
   return (
     <div className="space-y-10">
-      <section className="grid gap-8 rounded-3xl bg-gradient-to-br from-emerald-600 via-emerald-500 to-teal-400 p-10 text-white shadow-lg">
-        <div className="space-y-4">
-          <span className="inline-flex items-center gap-2 rounded-full bg-white/20 px-4 py-1 text-sm font-medium">
-            🌿 PlantHub Marketplace
-          </span>
-          <h1 className="text-3xl font-semibold md:text-4xl">
-            ค้นหาต้นไม้ที่ใช่ ส่งตรงจากร้านต้นไม้คุณภาพทั่วประเทศ
-          </h1>
-          <p className="max-w-2xl text-sm text-emerald-50 md:text-base">
-            ซื้อต้นไม้เหมือนช้อปปิ้งบน Amazon หรือ Shopee เลือกดูรายละเอียด ราคา และสต็อกได้ก่อนตัดสินใจ เพิ่มลงตะกร้า และชำระเงินได้ในที่เดียว
-          </p>
-        </div>
-        <div className="grid gap-4 text-sm text-emerald-50 md:grid-cols-3">
-          <div className="rounded-2xl bg-white/15 p-4">
-            <p className="text-lg font-semibold">2,000+ ต้นไม้พร้อมส่ง</p>
-            <p className="mt-2 text-emerald-50/80">ร้านค้าที่ผ่านการคัดเลือก มีรีวิวจริงจากลูกค้า</p>
-          </div>
-          <div className="rounded-2xl bg-white/15 p-4">
-            <p className="text-lg font-semibold">จัดส่งรวดเร็วทั่วไทย</p>
-            <p className="mt-2 text-emerald-50/80">เลือกวิธีรับสินค้าได้ตามสะดวก พร้อมแพ็คกันกระแทก</p>
-          </div>
-          <div className="rounded-2xl bg-white/15 p-4">
-            <p className="text-lg font-semibold">เปิดร้านง่ายใน 3 นาที</p>
-            <p className="mt-2 text-emerald-50/80">เครื่องมือผู้ขายครบ ดูยอดขายและจัดการสต็อกได้ทันที</p>
-          </div>
-        </div>
-      </section>
-
       <FilterBar
         keyword={keyword}
         onKeywordChange={setKeyword}
