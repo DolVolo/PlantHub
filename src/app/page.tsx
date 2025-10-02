@@ -331,7 +331,7 @@ export default function Home() {
                 >
                   <div className="relative h-60 overflow-hidden">
                     {product.imageUrl ? (
-                      <Image
+          <Image
                         src={product.imageUrl}
                         alt={product.name}
                         width={540}
@@ -462,60 +462,94 @@ export default function Home() {
           </div>
         </div>
       </footer>
-=======
-"use client";
+    </div>
+  );
 
-import { useMemo, useState } from "react";
-import { FilterBar } from "./component/FilterBar";
-import { ProductGrid } from "./component/ProductGrid";
-import { useProducts } from "./hooks/useProducts";
-import type { TreeProduct } from "./types";
+  function ProductGrid({ products }: { products: Product[] }) {
+    if (products.length === 0) {
+      return (
+        <div className="text-center py-12">
+          <p className="text-gray-500">ไม่พบสินค้าที่ค้นหา</p>
+        </div>
+      );
+    }
 
-function filterProducts(
-  products: TreeProduct[],
-  {
-    keyword,
-    category,
-    careLevel,
-    tags,
-  }: {
-    keyword: string;
-    category: "all" | TreeProduct["category"];
-    careLevel: "all" | TreeProduct["careLevel"];
-    tags: string[];
-  },
-) {
-  return products.filter((product) => {
-    const keywordMatch = keyword
-      ? [product.name, product.scientificName, product.description, product.tags.join(" ")]
-          .join(" ")
-          .toLowerCase()
-          .includes(keyword.toLowerCase())
-      : true;
-
-    const categoryMatch = category === "all" ? true : product.category === category;
-
-    const careMatch = careLevel === "all" ? true : product.careLevel === careLevel;
-
-    const tagsMatch = tags.length === 0 ? true : tags.every((tag) => product.tags.includes(tag));
-
-    return keywordMatch && categoryMatch && careMatch && tagsMatch;
-  });
+    return (
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        {products.map((product) => (
+          <div key={product.id} className="group relative rounded-2xl bg-white p-6 shadow-sm transition-all hover:shadow-md">
+            <div className="aspect-square overflow-hidden rounded-xl bg-gray-100">
+              <Image
+                src={product.imageUrl}
+                alt={product.name}
+                width={300}
+                height={300}
+                className="h-full w-full object-cover transition-transform group-hover:scale-105"
+              />
+            </div>
+            <div className="mt-4">
+              <h3 className="font-semibold text-gray-900">{product.name}</h3>
+              <p className="mt-1 text-sm text-gray-500 line-clamp-2">{product.description}</p>
+              <div className="mt-3 flex items-center justify-between">
+                <span className="text-lg font-bold text-emerald-600">
+                  ฿{product.price.toLocaleString()}
+                </span>
+                <button
+                  onClick={() => addToCart({
+                    id: product.id,
+                    name: product.name,
+                    price: product.price,
+                    imageUrl: product.imageUrl,
+                    sellerId: product.sellerId || '',
+                    quantity: 1
+                  })}
+                  className="rounded-full bg-emerald-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-600"
+                >
+                  เพิ่มลงตะกร้า
+                </button>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
 }
 
 export default function Home() {
-  const { products, status, error, fetchProducts } = useProducts();
-  const [keyword, setKeyword] = useState("");
-  const [category, setCategory] = useState<"all" | TreeProduct["category"]>("all");
-  const [careLevel, setCareLevel] = useState<"all" | TreeProduct["careLevel"]>("all");
-  const [tags, setTags] = useState<string[]>([]);
+  const router = useRouter();
+  const { profile, signOut: signOutUser } = useAuthContext();
+  const addToCart = useCartStore((state) => state.addItem);
+  const itemCount = useCartStore((state) => state.itemCount);
+  const [query, setQuery] = useState("");
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement | null>(null);
+  const [products, setProducts] = useState<Record<string, Product>>({});
 
-  const filteredProducts = useMemo(
-    () => filterProducts(products, { keyword, category, careLevel, tags }),
-    [category, careLevel, keyword, products, tags],
-  );
+  useEffect(() => {
+    const productsRef = ref(realtimeDb, 'products');
+    const unsubscribe = onValue(productsRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        setProducts(data);
+      }
+    });
 
-  const isLoading = status === "idle" || status === "loading";
+    return () => unsubscribe();
+  }, []);
+
+  const filteredProducts = useMemo(() => {
+    const productList = Object.values(products).filter(product => product.active !== false);
+    
+    if (!query.trim()) {
+      return productList;
+    }
+
+    return productList.filter(product =>
+      product.name.toLowerCase().includes(query.toLowerCase()) ||
+      product.description.toLowerCase().includes(query.toLowerCase())
+    );
+  }, [products, query]);
 
   return (
     <div className="space-y-10">
