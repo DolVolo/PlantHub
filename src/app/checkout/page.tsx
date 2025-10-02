@@ -92,10 +92,22 @@ export default function CheckoutPage() {
   };
 
   const handleSavePaymentInfo = async () => {
-    if (!user || !newInfoName.trim()) return;
+    if (!user || !newInfoName.trim()) {
+      console.log("Cannot save payment info: missing user or name");
+      return;
+    }
 
     try {
-      await axios.post("/api/payment-info", {
+      console.log("Saving payment info:", {
+        userId: user.id,
+        name: newInfoName.trim(),
+        firstName: form.firstName,
+        lastName: form.lastName,
+        address: form.address,
+        phone: form.phone,
+      });
+      
+      const response = await axios.post("/api/payment-info", {
         userId: user.id,
         name: newInfoName.trim(),
         firstName: form.firstName,
@@ -105,6 +117,7 @@ export default function CheckoutPage() {
         isDefault: savedPaymentInfoList.length === 0, // First one becomes default
       });
       
+      console.log("Payment info saved successfully:", response.data);
       await fetchSavedPaymentInfo();
       setNewInfoName("");
       setSaveThisInfo(false);
@@ -141,19 +154,24 @@ export default function CheckoutPage() {
 
     try {
       // Submit order to API (this will decrease stock)
-      await axios.post("/api/orders", {
+      console.log("Submitting order with items:", items);
+      const response = await axios.post("/api/orders", {
         items,
         customerDetails: form,
         userId: user?.id || null,
       });
+      console.log("Order submitted successfully:", response.data);
 
       // Save payment info if requested
-      if (saveThisInfo && user && showNewAddressForm) {
+      if (saveThisInfo && user && showNewAddressForm && newInfoName.trim()) {
         await handleSavePaymentInfo();
       }
 
       setOrderSuccess(true);
       clearBasket();
+      
+      // Refresh products to show updated stock
+      fetchProducts({ force: true });
     } catch (error) {
       console.error("Order submission error:", error);
       if (axios.isAxiosError(error)) {

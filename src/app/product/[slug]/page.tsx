@@ -34,13 +34,23 @@ export default function ProductDetailPage() {
     fetchShops().catch((error) => console.error("Failed to fetch shops", error));
   }, [fetchProducts, fetchShops, slug, status]);
 
-  // Increment view count when product is loaded
+  // Increment view count when product is loaded (only once per user/session)
   useEffect(() => {
     if (product && product.id) {
-      axios.post(`/api/products/${product.id}/view`)
+      // Generate a session ID if user is not logged in
+      let sessionId = localStorage.getItem("sessionId");
+      if (!sessionId) {
+        sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        localStorage.setItem("sessionId", sessionId);
+      }
+
+      axios.post(`/api/products/${product.id}/view`, {
+        userId: user?.id || null,
+        sessionId: !user ? sessionId : null,
+      })
         .catch((error) => console.error("Failed to increment view:", error));
     }
-  }, [product?.id]);
+  }, [product?.id, user?.id]);
 
   useEffect(() => {
     if (!slug) return;

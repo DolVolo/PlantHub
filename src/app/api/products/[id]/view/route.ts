@@ -1,17 +1,28 @@
 import { NextResponse } from "next/server";
 import { adminFirestore } from "../../../../lib/firebaseAdmin";
 
-// POST: Increment product view count
+// POST: Increment product view count (once per user/session)
 export async function POST(
   request: Request,
   context: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await context.params;
+    const body = await request.json();
+    const { userId, sessionId } = body;
 
     if (!id) {
       return NextResponse.json(
         { message: "Product ID is required" },
+        { status: 400 }
+      );
+    }
+
+    // Use either userId or sessionId to track unique views
+    const viewerId = userId || sessionId;
+    if (!viewerId) {
+      return NextResponse.json(
+        { message: "User ID or Session ID is required" },
         { status: 400 }
       );
     }
@@ -26,6 +37,30 @@ export async function POST(
       );
     }
 
+    // Check if this user/session has already viewed this product
+    const viewsRef = adminFirestore()
+      .collection("productViews")
+      .doc(`${id}_${viewerId}`);
+    
+    const viewDoc = await viewsRef.get();
+
+    // If already viewed, don't increment
+    if (viewDoc.exists) {
+      return NextResponse.json({ 
+        message: "Already viewed",
+        views: productDoc.data()?.views || 0,
+        alreadyViewed: true
+      });
+    }
+
+    // Record this view
+    await viewsRef.set({
+      productId: id,
+      viewerId,
+      viewedAt: new Date().toISOString(),
+    });
+
+    // Increment view count
     const currentViews = productDoc.data()?.views || 0;
     await productRef.update({
       views: currentViews + 1,
@@ -33,7 +68,8 @@ export async function POST(
 
     return NextResponse.json({ 
       message: "View count incremented",
-      views: currentViews + 1 
+      views: currentViews + 1,
+      alreadyViewed: false
     });
   } catch (error) {
     console.error("[Increment View] Error:", error);

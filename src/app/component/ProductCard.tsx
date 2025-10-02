@@ -44,6 +44,15 @@ export function ProductCard({ product }: ProductCardProps) {
         <div className="absolute left-4 top-4 rounded-full bg-white/90 px-3 py-1 text-xs font-medium text-emerald-700">
           {product.category.toUpperCase()}
         </div>
+        {product.views !== undefined && product.views > 0 && (
+          <div className="absolute right-4 top-4 flex items-center gap-1 rounded-full bg-white/90 px-3 py-1 text-xs font-medium text-emerald-700">
+            <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+            </svg>
+            <span>{product.views.toLocaleString()}</span>
+          </div>
+        )}
       </Link>
       <div className="flex flex-1 flex-col gap-4 p-5">
         <div>
@@ -64,12 +73,6 @@ export function ProductCard({ product }: ProductCardProps) {
           <div className="space-y-1">
             <p>สต็อก {product.inStock} ชุด</p>
             <p>🌤️ แสง: {product.light === "bright" ? "สว่าง" : product.light === "medium" ? "รำไร" : "แสงน้อย"}</p>
-            {product.views !== undefined && product.views > 0 && (
-              <p className="flex items-center gap-1">
-                <span>👁️</span>
-                <span>{product.views.toLocaleString()} ครั้ง</span>
-              </p>
-            )}
           </div>
           <button
             onClick={handleAddToBasket}
