@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useMemo, useState } from "react";
+import Image from "next/image";
 import { useAuth } from "../../hooks/useAuth";
 import { useProducts } from "../../hooks/useProducts";
 import type { TreeCategory, TreeProduct } from "../../types";
@@ -404,14 +405,17 @@ export default function SellerDashboardPage() {
                 />
                 {form.imageUrl && (
                   <div className="rounded-2xl border border-emerald-100 p-3">
-                    <img
-                      src={form.imageUrl}
-                      alt="ตัวอย่างรูปสินค้า"
-                      className="h-32 w-32 rounded-xl object-cover"
-                      onError={(e) => {
-                        e.currentTarget.src = "https://via.placeholder.com/150?text=Invalid+Image";
-                      }}
-                    />
+                    <div className="relative h-32 w-32">
+                      <Image
+                        src={form.imageUrl}
+                        alt="ตัวอย่างรูปสินค้า"
+                        fill
+                        className="rounded-xl object-cover"
+                        onError={(e) => {
+                          e.currentTarget.src = "https://via.placeholder.com/150?text=Invalid+Image";
+                        }}
+                      />
+                    </div>
                   </div>
                 )}
               </div>

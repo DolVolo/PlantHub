@@ -16,7 +16,13 @@ export async function GET(request: Request) {
     let query = db.collection(SHOPS_COLLECTION);
 
     if (ownerId) {
-      query = query.where("ownerId", "==", ownerId) as any;
+      const queryWithFilter = query.where("ownerId", "==", ownerId);
+      const snapshot = await queryWithFilter.get();
+      const shops = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      })) as Shop[];
+      return NextResponse.json(shops);
     }
 
     const snapshot = await query.get();

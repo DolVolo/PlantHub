@@ -207,11 +207,14 @@ export default function ProductDetailPage() {
           {sellerShop ? (
             <div className="mt-3 space-y-2">
               {sellerShop.imageUrl && (
-                <img
-                  src={sellerShop.imageUrl}
-                  alt={sellerShop.name}
-                  className="w-full rounded-xl object-cover h-32 mb-3"
-                />
+                <div className="relative h-32 w-full mb-3">
+                  <Image
+                    src={sellerShop.imageUrl}
+                    alt={sellerShop.name}
+                    fill
+                    className="rounded-xl object-cover"
+                  />
+                </div>
               )}
               <p className="font-medium text-emerald-900">{sellerShop.name}</p>
               <p className="text-xs text-emerald-700">{sellerShop.description}</p>

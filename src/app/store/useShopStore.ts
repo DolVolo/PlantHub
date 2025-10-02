@@ -20,7 +20,7 @@ interface ShopState {
 }
 
 export const useShopStore = create<ShopState>()(
-  devtools((set, get) => ({
+  devtools((set) => ({
     shops: [],
     currentShop: null,
     status: "idle",

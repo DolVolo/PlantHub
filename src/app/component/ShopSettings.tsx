@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
-import type { Shop } from "../types";
+import Image from "next/image";
 import { useShopStore } from "../store/useShopStore";
 
 interface ShopSettingsProps {
@@ -177,11 +177,14 @@ export function ShopSettings({ ownerId }: ShopSettingsProps) {
         <div className="space-y-4">
           {myShop.imageUrl && (
             <div className="rounded-2xl border border-emerald-100 p-4">
-              <img
-                src={myShop.imageUrl}
-                alt={myShop.name}
-                className="h-48 w-full rounded-xl object-cover"
-              />
+              <div className="relative h-48 w-full">
+                <Image
+                  src={myShop.imageUrl}
+                  alt={myShop.name}
+                  fill
+                  className="rounded-xl object-cover"
+                />
+              </div>
             </div>
           )}
           <div className="space-y-2 text-sm text-emerald-900/80">
@@ -290,14 +293,17 @@ export function ShopSettings({ ownerId }: ShopSettingsProps) {
                 />
                 {form.imageUrl && (
                   <div className="rounded-2xl border border-emerald-100 p-3">
-                    <img
-                      src={form.imageUrl}
-                      alt="ตัวอย่างรูปร้านค้า"
-                      className="h-32 w-full rounded-xl object-cover"
-                      onError={(e) => {
-                        e.currentTarget.src = "https://via.placeholder.com/400x200?text=Invalid+Image";
-                      }}
-                    />
+                    <div className="relative h-32 w-full">
+                      <Image
+                        src={form.imageUrl}
+                        alt="ตัวอย่างรูปร้านค้า"
+                        fill
+                        className="rounded-xl object-cover"
+                        onError={(e) => {
+                          e.currentTarget.src = "https://via.placeholder.com/400x200?text=Invalid+Image";
+                        }}
+                      />
+                    </div>
                   </div>
                 )}
               </div>
