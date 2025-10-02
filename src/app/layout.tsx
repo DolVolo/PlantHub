@@ -30,9 +30,9 @@ export const metadata: Metadata = {
     "บอนไซ",
   ],
   icons: {
-    icon: '/image/logo.png',
-    shortcut: '/image/logo.png',
-    apple: '/image/logo.png',
+    icon: '/image/logo.png?v=2',
+    shortcut: '/image/logo.png?v=2',
+    apple: '/image/logo.png?v=2',
   },
   openGraph: {
     title: "PlantHub - แพลตฟอร์มร้านค้าต้นไม้ครบวงจร",
@@ -55,9 +55,11 @@ export default function RootLayout({
   return (
     <html lang="th">
       <head>
-        <link rel="icon" type="image/png" href="/image/logo.png" />
-        <link rel="shortcut icon" type="image/png" href="/image/logo.png" />
-        <link rel="apple-touch-icon" href="/image/logo.png" />
+        <link rel="icon" href="/image/logo.png?v=2" sizes="any" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/image/logo.png?v=2" />
+        <link rel="icon" type="image/png" sizes="16x16" href="/image/logo.png?v=2" />
+        <link rel="shortcut icon" href="/image/logo.png?v=2" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/image/logo.png?v=2" />
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} min-h-screen bg-emerald-50 antialiased`}>
         <div className="flex min-h-screen flex-col">
