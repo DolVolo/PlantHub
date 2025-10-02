@@ -13,7 +13,7 @@ export async function GET(request: Request) {
     const ownerId = searchParams.get("ownerId");
 
     const db = adminFirestore();
-    let query = db.collection(SHOPS_COLLECTION);
+    const query = db.collection(SHOPS_COLLECTION);
 
     if (ownerId) {
       const queryWithFilter = query.where("ownerId", "==", ownerId);
