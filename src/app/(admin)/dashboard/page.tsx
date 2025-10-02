@@ -206,6 +206,7 @@ export default function SellerDashboardPage() {
     // Validate file type
     if (!file.type.startsWith("image/")) {
       setFormError("กรุณาเลือกไฟล์รูปภาพเท่านั้น");
+      event.target.value = ""; // Clear input
       return;
     }
 
@@ -213,6 +214,7 @@ export default function SellerDashboardPage() {
     const maxSize = 5 * 1024 * 1024;
     if (file.size > maxSize) {
       setFormError("ขนาดไฟล์ต้องไม่เกิน 5MB");
+      event.target.value = ""; // Clear input
       return;
     }
 
@@ -236,9 +238,11 @@ export default function SellerDashboardPage() {
 
       setForm((prev) => ({ ...prev, imageUrl: data.url }));
       setSuccess("อัปโหลดรูปภาพสำเร็จ");
+      event.target.value = ""; // Clear input for next upload
     } catch (error) {
       console.error("อัปโหลดรูปภาพไม่สำเร็จ", error);
       setFormError(error instanceof Error ? error.message : "ไม่สามารถอัปโหลดรูปภาพได้");
+      event.target.value = ""; // Clear input
     } finally {
       setUploadingImage(false);
     }
@@ -369,7 +373,7 @@ export default function SellerDashboardPage() {
               <label>รูปภาพสินค้า *</label>
               <div className="space-y-3">
                 <div className="flex gap-3">
-                  <label className="flex-1">
+                  <div className="flex-1">
                     <input
                       type="file"
                       accept="image/*"
@@ -378,9 +382,9 @@ export default function SellerDashboardPage() {
                       className="hidden"
                       id="image-upload"
                     />
-                    <div
+                    <label
+                      htmlFor="image-upload"
                       className="flex cursor-pointer items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-emerald-300 bg-emerald-50/50 px-4 py-3 text-sm transition hover:border-emerald-400 hover:bg-emerald-50"
-                      onClick={() => document.getElementById("image-upload")?.click()}
                     >
                       {uploadingImage ? (
                         <>
@@ -393,8 +397,8 @@ export default function SellerDashboardPage() {
                           <span>อัปโหลดรูปจากอุปกรณ์</span>
                         </>
                       )}
-                    </div>
-                  </label>
+                    </label>
+                  </div>
                 </div>
                 <input
                   required

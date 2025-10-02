@@ -59,12 +59,14 @@ export function ShopSettings({ ownerId }: ShopSettingsProps) {
 
     if (!file.type.startsWith("image/")) {
       setError("กรุณาเลือกไฟล์รูปภาพเท่านั้น");
+      event.target.value = ""; // Clear input
       return;
     }
 
     const maxSize = 5 * 1024 * 1024;
     if (file.size > maxSize) {
       setError("ขนาดไฟล์ต้องไม่เกิน 5MB");
+      event.target.value = ""; // Clear input
       return;
     }
 
@@ -88,9 +90,11 @@ export function ShopSettings({ ownerId }: ShopSettingsProps) {
 
       setForm((prev) => ({ ...prev, imageUrl: data.url }));
       setSuccess("อัปโหลดรูปภาพสำเร็จ");
+      event.target.value = ""; // Clear input for next upload
     } catch (error) {
       console.error("อัปโหลดรูปภาพไม่สำเร็จ", error);
       setError(error instanceof Error ? error.message : "ไม่สามารถอัปโหลดรูปภาพได้");
+      event.target.value = ""; // Clear input
     } finally {
       setUploadingImage(false);
     }
@@ -258,7 +262,7 @@ export function ShopSettings({ ownerId }: ShopSettingsProps) {
               <label>รูปภาพร้านค้า</label>
               <div className="space-y-3">
                 <div className="flex gap-3">
-                  <label className="flex-1">
+                  <div className="flex-1">
                     <input
                       type="file"
                       accept="image/*"
@@ -267,9 +271,9 @@ export function ShopSettings({ ownerId }: ShopSettingsProps) {
                       className="hidden"
                       id="shop-image-upload"
                     />
-                    <div
+                    <label
+                      htmlFor="shop-image-upload"
                       className="flex cursor-pointer items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-emerald-300 bg-emerald-50/50 px-4 py-3 text-sm transition hover:border-emerald-400 hover:bg-emerald-50"
-                      onClick={() => document.getElementById("shop-image-upload")?.click()}
                     >
                       {uploadingImage ? (
                         <>
@@ -282,8 +286,8 @@ export function ShopSettings({ ownerId }: ShopSettingsProps) {
                           <span>อัปโหลดรูปจากอุปกรณ์</span>
                         </>
                       )}
-                    </div>
-                  </label>
+                    </label>
+                  </div>
                 </div>
                 <input
                   value={form.imageUrl}
