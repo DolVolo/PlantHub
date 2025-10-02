@@ -30,9 +30,9 @@ export const metadata: Metadata = {
     "บอนไซ",
   ],
   icons: {
-    icon: '/image/logo.png?v=2',
-    shortcut: '/image/logo.png?v=2',
-    apple: '/image/logo.png?v=2',
+    icon: "/image/icon.png?v=1",
+    shortcut: "/image/icon.png?v=1",
+    apple: "/image/icon.png?v=1",
   },
   openGraph: {
     title: "PlantHub - แพลตฟอร์มร้านค้าต้นไม้ครบวงจร",
@@ -42,7 +42,7 @@ export const metadata: Metadata = {
     siteName: "PlantHub",
     locale: "th_TH",
     type: "website",
-    images: ['/image/logo.png'],
+  images: ["/image/icon.png?v=1"],
   },
   metadataBase: new URL("https://planthub.example.com"),
 };
@@ -55,11 +55,11 @@ export default function RootLayout({
   return (
     <html lang="th">
       <head>
-        <link rel="icon" href="/image/logo.png?v=2" sizes="any" />
-        <link rel="icon" type="image/png" sizes="32x32" href="/image/logo.png?v=2" />
-        <link rel="icon" type="image/png" sizes="16x16" href="/image/logo.png?v=2" />
-        <link rel="shortcut icon" href="/image/logo.png?v=2" />
-        <link rel="apple-touch-icon" sizes="180x180" href="/image/logo.png?v=2" />
+        <link rel="icon" href="/image/icon.png?v=1" sizes="any" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/image/icon.png?v=1" />
+        <link rel="icon" type="image/png" sizes="16x16" href="/image/icon.png?v=1" />
+        <link rel="shortcut icon" href="/image/icon.png?v=1" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/image/icon.png?v=1" />
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} min-h-screen bg-emerald-50 antialiased`}>
         <div className="flex min-h-screen flex-col">
