@@ -29,6 +29,11 @@ export const metadata: Metadata = {
     "ต้นไม้ในร่ม",
     "บอนไซ",
   ],
+  icons: {
+    icon: '/image/logo.png',
+    shortcut: '/image/logo.png',
+    apple: '/image/logo.png',
+  },
   openGraph: {
     title: "PlantHub - แพลตฟอร์มร้านค้าต้นไม้ครบวงจร",
     description:
@@ -37,6 +42,7 @@ export const metadata: Metadata = {
     siteName: "PlantHub",
     locale: "th_TH",
     type: "website",
+    images: ['/image/logo.png'],
   },
   metadataBase: new URL("https://planthub.example.com"),
 };

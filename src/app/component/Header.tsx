@@ -14,10 +14,30 @@ export function Header() {
 
   return (
     <>
-      <header className="supports-[backdrop-filter]:backdrop-blur-lg sticky top-0 z-40 border-b border-emerald-100/80 bg-white/80">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4 text-sm">
-          <Link href="/" className="font-semibold text-emerald-700">
-            PlantHub 🌱
+      <header className="supports-[backdrop-filter]:backdrop-blur-lg sticky top-0 z-40 overflow-hidden border-b border-emerald-100/80 bg-white/80 shadow-sm">
+        {/* Animated Background Image */}
+        <div 
+          className="absolute inset-0 animate-pulse bg-cover bg-center opacity-20 transition-all duration-1000 ease-in-out hover:scale-110 hover:opacity-30"
+          style={{ 
+            backgroundImage: "url('/image/imageheader.png')",
+            animationDuration: '8s'
+          }}
+        />
+        
+        {/* Animated Gradient Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/10 via-emerald-300/5 to-emerald-500/10 animate-shimmer" />
+        
+        {/* Decorative Elements */}
+        <div className="absolute left-0 top-0 h-1 w-full bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent" />
+        
+        <div className="relative mx-auto flex max-w-6xl items-center justify-between px-6 py-4 text-sm">
+          <Link href="/" className="group flex items-center gap-2 font-bold text-emerald-700 transition-all duration-300 hover:scale-105">
+            <span className="animate-float text-2xl transition-transform group-hover:rotate-12 group-hover:scale-110">
+              🌱
+            </span>
+            <span className="bg-gradient-to-r from-emerald-600 via-emerald-700 to-emerald-800 bg-clip-text text-lg text-transparent transition-all">
+              PlantHub
+            </span>
           </Link>
 
           <div className="flex items-center gap-4">
@@ -48,7 +68,10 @@ export function Header() {
       {/* Floating Cart Button */}
       <button
         onClick={() => setIsBasketOpen(true)}
-        className="fixed right-6 top-24 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500 text-white shadow-lg transition hover:bg-emerald-600 hover:scale-110"
+        className={`fixed right-6 top-24 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500 text-white shadow-lg transition-all duration-300 hover:bg-emerald-600 hover:scale-110 hover:shadow-xl ${
+          items.length > 0 ? 'animate-bounce' : ''
+        }`}
+        style={{ animationDuration: items.length > 0 ? '2s' : undefined }}
         title="ตะกร้าสินค้า"
       >
         <svg
@@ -65,7 +88,7 @@ export function Header() {
           />
         </svg>
         {items.length > 0 && (
-          <span className="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white shadow-md">
+          <span className="absolute -right-2 -top-2 flex h-6 w-6 animate-pulse items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white shadow-md ring-2 ring-white">
             {items.length}
           </span>
         )}
