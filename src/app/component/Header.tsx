@@ -14,7 +14,7 @@ export function Header() {
 
   return (
     <>
-      <header className="supports-[backdrop-filter]:backdrop-blur-lg sticky top-0 z-40 overflow-hidden border-b border-emerald-100/80 bg-white/80 shadow-sm">
+  <header className="supports-[backdrop-filter]:backdrop-blur-lg sticky top-0 z-40 overflow-visible border-b border-emerald-100/80 bg-white/80 shadow-sm">
         {/* Animated Background Image */}
         <div 
           className="absolute inset-0 animate-pulse bg-cover bg-center opacity-20 transition-all duration-1000 ease-in-out hover:scale-110 hover:opacity-30"

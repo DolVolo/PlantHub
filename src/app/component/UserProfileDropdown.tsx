@@ -106,7 +106,7 @@ export function UserProfileDropdown({ user, onLogout }: UserProfileDropdownProps
 
       {/* Dropdown Menu */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-64 rounded-2xl border border-emerald-100 bg-white shadow-lg">
+        <div className="absolute right-0 z-50 mt-2 w-64 rounded-2xl border border-emerald-100 bg-white shadow-lg">
           {/* User Info Section */}
           <div className="border-b border-emerald-100 p-4">
             <div className="flex items-center gap-3">
