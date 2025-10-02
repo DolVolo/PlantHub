@@ -79,4 +79,5 @@ export interface AuthUser {
   name: string;
   email: string;
   role: "buyer" | "seller" | "admin";
+  profileImageUrl?: string;
 }

@@ -28,6 +28,7 @@ interface AuthState {
   logout: () => Promise<void>;
   setUser: (user: AuthUser | null, firebaseUser: User | null) => void;
   setInitialized: (initialized: boolean) => void;
+  updateUserProfile: (userId: string, updates: { name?: string; profileImageUrl?: string }) => Promise<AuthUser>;
 }
 
 function extractErrorMessage(error: unknown, fallback: string) {
@@ -157,6 +158,26 @@ export const useAuthStore = create<AuthState>()(
         console.info("[Auth] Firebase sign-out");
       }
       set({ user: null, firebaseUser: null });
+    },
+    
+    updateUserProfile: async (userId, updates) => {
+      set({ isLoading: true, error: undefined });
+      try {
+        const response = await axios.put<AuthUser>(`/api/users/${userId}/update`, updates);
+        
+        // Update local state with new user data
+        set((state) => ({
+          user: response.data,
+          isLoading: false,
+        }));
+        
+        console.info("[Auth] Profile updated:", response.data);
+        return response.data;
+      } catch (error) {
+        const message = extractErrorMessage(error, "ไม่สามารถอัปเดตโปรไฟล์ได้");
+        set({ error: message, isLoading: false });
+        throw error;
+      }
     },
   }))
 );

@@ -57,6 +57,7 @@ export async function PUT(
       email: userData?.email || "",
       name: userData?.name || "User",
       role: userData?.role || "buyer",
+      profileImageUrl: userData?.profileImageUrl || undefined,
     };
 
     return NextResponse.json(user);

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import type { AuthUser } from "../types";
@@ -77,9 +78,21 @@ export function UserProfileDropdown({ user, onLogout }: UserProfileDropdownProps
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center gap-2 rounded-full bg-emerald-500 px-3 py-1.5 text-white shadow-sm transition hover:bg-emerald-600"
       >
-        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-white/20 text-xs font-semibold">
-          {getInitials(user.name)}
-        </div>
+        {user.profileImageUrl ? (
+          <div className="relative h-6 w-6 overflow-hidden rounded-full bg-white/20">
+            <Image
+              src={user.profileImageUrl}
+              alt={user.name}
+              fill
+              className="object-cover"
+              unoptimized
+            />
+          </div>
+        ) : (
+          <div className="flex h-6 w-6 items-center justify-center rounded-full bg-white/20 text-xs font-semibold">
+            {getInitials(user.name)}
+          </div>
+        )}
         <span className="font-medium">{user.name}</span>
         <svg
           className={`h-4 w-4 transition-transform ${isOpen ? "rotate-180" : ""}`}
@@ -97,9 +110,21 @@ export function UserProfileDropdown({ user, onLogout }: UserProfileDropdownProps
           {/* User Info Section */}
           <div className="border-b border-emerald-100 p-4">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500 text-white font-semibold">
-                {getInitials(user.name)}
-              </div>
+              {user.profileImageUrl ? (
+                <div className="relative h-10 w-10 overflow-hidden rounded-full bg-emerald-500">
+                  <Image
+                    src={user.profileImageUrl}
+                    alt={user.name}
+                    fill
+                    className="object-cover"
+                    unoptimized
+                  />
+                </div>
+              ) : (
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500 text-white font-semibold">
+                  {getInitials(user.name)}
+                </div>
+              )}
               <div className="flex-1 overflow-hidden">
                 <p className="font-semibold text-emerald-900 truncate">{user.name}</p>
                 <p className="text-xs text-emerald-600">{getRoleDisplay(user.role)}</p>

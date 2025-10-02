@@ -7,7 +7,7 @@ import { useAuth } from "../hooks/useAuth";
 import { LoginDialog } from "../component/dialogs";
 
 export default function SettingsPage() {
-  const { user } = useAuth();
+  const { user, updateUserProfile } = useAuth();
   const [activeTab, setActiveTab] = useState<"profile" | "account" | "preferences">("profile");
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -93,18 +93,17 @@ export default function SettingsPage() {
     setSuccess("");
 
     try {
-      await axios.put(`/api/users/${user.id}/update`, {
+      // Use the auth store method to update profile
+      await updateUserProfile(user.id, {
         name: profileForm.name.trim(),
-        profileImageUrl: profileForm.profileImageUrl || null,
+        profileImageUrl: profileForm.profileImageUrl || undefined,
       });
 
       setSuccess("บันทึกข้อมูลสำเร็จ");
       setIsEditing(false);
       
-      // Refresh the page to update user data
-      setTimeout(() => {
-        window.location.reload();
-      }, 1000);
+      // Scroll to top to show success message
+      window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err) {
       console.error("Save error:", err);
       setError("ไม่สามารถบันทึกข้อมูลได้");
