@@ -30,7 +30,10 @@ export const metadata: Metadata = {
     "บอนไซ",
   ],
   icons: {
-    icon: "/image/icon.png?v=1",
+    icon: [
+      { url: "/image/icon.png?v=1", sizes: "32x32", type: "image/png" },
+      { url: "/image/icon.png?v=1", sizes: "16x16", type: "image/png" },
+    ],
     shortcut: "/image/icon.png?v=1",
     apple: "/image/icon.png?v=1",
   },
@@ -42,7 +45,14 @@ export const metadata: Metadata = {
     siteName: "PlantHub",
     locale: "th_TH",
     type: "website",
-  images: ["/image/icon.png?v=1"],
+    images: [
+      {
+        url: "/image/icon.png?v=1",
+        width: 512,
+        height: 512,
+        alt: "PlantHub logo",
+      },
+    ],
   },
   metadataBase: new URL("https://planthub.example.com"),
 };

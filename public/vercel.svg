@@ -1,1 +1,25 @@
-<svg fill="none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1155 1000"><path d="m577.3 0 577.4 1000H0z" fill="#fff"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+	<defs>
+		<radialGradient id="bg" cx="50%" cy="50%" r="70%">
+			<stop offset="0%" stop-color="#bbf7d0" />
+			<stop offset="100%" stop-color="#047857" />
+		</radialGradient>
+		<linearGradient id="leaf" x1="0" y1="0" x2="1" y2="1">
+			<stop offset="0%" stop-color="#22c55e" />
+			<stop offset="100%" stop-color="#15803d" />
+		</linearGradient>
+	</defs>
+	<rect width="256" height="256" rx="56" fill="url(#bg)" />
+	<path
+		d="M128 202c-28.8-12-48-42.4-48-75.13 0-33.2 21.6-62.27 50.4-73.87 6.13-2.4 11.87 4.13 9.2 10.13-6.93 15.47-6.93 34.27.27 50.27 3.73 8.27 9.33 15.33 16.13 21.2 3.47 3 3.47 8.4.13 11.6-7.33 6.8-15.87 11.47-25.13 13.87 19.6-1.73 36.4-11.2 49.07-27.07 15.2-19.13 21.47-43.73 17.2-68a8 8 0 0 1 12.53-7.87c21.6 14.93 34.8 39.2 34.8 65.6 0 48.53-39.47 88-88 88Z"
+		fill="url(#leaf)"
+	/>
+	<path
+		d="M128 202c-23.6-12-37.33-36.27-37.33-63.87 0-29.2 17.33-55.73 43.2-66.67"
+		stroke="#ecfdf5"
+		stroke-width="10"
+		stroke-linecap="round"
+		stroke-linejoin="round"
+		opacity="0.6"
+	/>
+</svg>
