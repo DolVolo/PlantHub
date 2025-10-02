@@ -259,6 +259,7 @@ export default function SettingsPage() {
                             alt="รูปโปรไฟล์"
                             fill
                             className="rounded-xl object-cover"
+                            unoptimized
                             onError={(e) => {
                               e.currentTarget.src = "https://via.placeholder.com/150?text=Invalid+Image";
                             }}
@@ -285,7 +286,7 @@ export default function SettingsPage() {
                       value={profileForm.profileImageUrl}
                       onChange={(e) => setProfileForm((prev) => ({ ...prev, profileImageUrl: e.target.value }))}
                       placeholder="หรือใส่ลิงก์รูปภาพ (https://...)"
-                      className="w-full rounded-2xl border border-emerald-200 bg-white px-4 py-2 text-sm focus:border-emerald-400 focus:outline-none"
+                      className="w-full rounded-2xl border border-emerald-200 bg-white px-4 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-emerald-400 focus:outline-none"
                     />
                   </div>
                 </div>
@@ -300,7 +301,7 @@ export default function SettingsPage() {
                     value={profileForm.name}
                     onChange={(e) => setProfileForm((prev) => ({ ...prev, name: e.target.value }))}
                     placeholder="กรอกชื่อของคุณ"
-                    className="mt-2 w-full rounded-2xl border border-emerald-200 bg-white px-4 py-2 focus:border-emerald-400 focus:outline-none"
+                    className="mt-2 w-full rounded-2xl border border-emerald-200 bg-white px-4 py-2 text-gray-900 placeholder:text-gray-400 focus:border-emerald-400 focus:outline-none"
                     required
                   />
                 </div>
