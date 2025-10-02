@@ -7,6 +7,7 @@ import type { AuthUser } from "../types";
 import { 
   signInWithEmailAndPassword, 
   signOut,
+  onAuthStateChanged,
   type User
 } from "firebase/auth";
 import { firebaseAuth } from "../lib/firebaseClient";
@@ -19,11 +20,14 @@ interface AuthState {
   firebaseUser: User | null;
   isLoading: boolean;
   error?: string;
+  initialized: boolean;
   login: (credentials: { email: string; password: string }) => Promise<AuthUser>;
   register: (input: { name: string; email: string; password: string; role?: AuthUser["role"] }) => Promise<AuthUser>;
   requestPasswordReset: (email: string) => Promise<{ message: string; token?: string; expiresAt?: string }>;
   resetPassword: (input: { token: string; newPassword: string }) => Promise<AuthUser>;
   logout: () => Promise<void>;
+  setUser: (user: AuthUser | null, firebaseUser: User | null) => void;
+  setInitialized: (initialized: boolean) => void;
 }
 
 function extractErrorMessage(error: unknown, fallback: string) {
@@ -43,8 +47,17 @@ export const useAuthStore = create<AuthState>()(
   devtools((set) => ({
     user: null,
     firebaseUser: null,
-    isLoading: false,
+    isLoading: true, // Start with loading true to check auth state
     error: undefined,
+    initialized: false,
+    
+    setUser: (user, firebaseUser) => {
+      set({ user, firebaseUser });
+    },
+    
+    setInitialized: (initialized) => {
+      set({ initialized, isLoading: false });
+    },
     
     login: async ({ email, password }) => {
       set({ isLoading: true, error: undefined });
@@ -147,3 +160,38 @@ export const useAuthStore = create<AuthState>()(
     },
   }))
 );
+
+// Initialize auth state listener on client side
+if (USE_FIREBASE_CLIENT && typeof window !== "undefined") {
+  const auth = firebaseAuth();
+  
+  onAuthStateChanged(auth, async (firebaseUser) => {
+    const store = useAuthStore.getState();
+    
+    if (firebaseUser) {
+      try {
+        // Get user token and custom claims
+        const token = await firebaseUser.getIdTokenResult();
+        
+        // Fetch full user profile from Firestore via API
+        const response = await axios.get<AuthUser>(`/api/users/${firebaseUser.uid}`);
+        
+        const user: AuthUser = {
+          ...response.data,
+          role: (token.claims.role as AuthUser["role"]) || response.data.role || "buyer",
+        };
+        
+        store.setUser(user, firebaseUser);
+        console.info("[Auth] Session restored:", user.id);
+      } catch (error) {
+        console.error("[Auth] Failed to restore session:", error);
+        store.setUser(null, null);
+      }
+    } else {
+      store.setUser(null, null);
+      console.info("[Auth] No active session");
+    }
+    
+    store.setInitialized(true);
+  });
+}
