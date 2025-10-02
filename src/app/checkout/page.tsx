@@ -283,7 +283,7 @@ export default function CheckoutPage() {
                 value={form.firstName}
                 onChange={(event) => setForm((prev) => ({ ...prev, firstName: event.target.value }))}
                 placeholder="ชื่อ"
-                className="rounded-2xl border border-emerald-200 px-4 py-2 text-sm focus:border-emerald-400 focus:outline-none"
+                className="rounded-2xl border border-emerald-200 bg-white px-4 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-emerald-400 focus:outline-none"
               />
             </label>
             <label className="flex flex-col gap-2 text-sm text-emerald-900/80">
@@ -293,7 +293,7 @@ export default function CheckoutPage() {
                 value={form.lastName}
                 onChange={(event) => setForm((prev) => ({ ...prev, lastName: event.target.value }))}
                 placeholder="นามสกุล"
-                className="rounded-2xl border border-emerald-200 px-4 py-2 text-sm focus:border-emerald-400 focus:outline-none"
+                className="rounded-2xl border border-emerald-200 bg-white px-4 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-emerald-400 focus:outline-none"
               />
             </label>
           </div>
@@ -305,7 +305,7 @@ export default function CheckoutPage() {
               onChange={(event) => setForm((prev) => ({ ...prev, address: event.target.value }))}
               placeholder="ที่อยู่สำหรับจัดส่ง"
               rows={3}
-              className="rounded-2xl border border-emerald-200 px-4 py-2 text-sm focus:border-emerald-400 focus:outline-none"
+              className="rounded-2xl border border-emerald-200 bg-white px-4 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-emerald-400 focus:outline-none"
             />
           </label>
           <div className="grid gap-4 md:grid-cols-2">
@@ -341,7 +341,7 @@ export default function CheckoutPage() {
                 type="date"
                 value={form.purchaseDate}
                 onChange={(event) => setForm((prev) => ({ ...prev, purchaseDate: event.target.value }))}
-                className="rounded-2xl border border-emerald-200 px-4 py-2 text-sm focus:border-emerald-400 focus:outline-none"
+                className="rounded-2xl border border-emerald-200 bg-white px-4 py-2 text-sm text-gray-900 focus:border-emerald-400 focus:outline-none"
               />
             </label>
           </div>
@@ -440,7 +440,7 @@ export default function CheckoutPage() {
                       value={newInfoName}
                       onChange={(e) => setNewInfoName(e.target.value)}
                       placeholder="ตั้งชื่อสำหรับที่อยู่นี้ (เช่น บ้าน, ที่ทำงาน)"
-                      className="mt-2 w-full rounded-xl border border-emerald-200 px-3 py-2 text-sm focus:border-emerald-400 focus:outline-none"
+                      className="mt-2 w-full rounded-xl border border-emerald-200 bg-white px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-emerald-400 focus:outline-none"
                       required={saveThisInfo}
                     />
                   )}

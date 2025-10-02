@@ -36,6 +36,7 @@ export function ProductCard({ product }: ProductCardProps) {
           src={imgError ? "/plant-placeholder.svg" : product.imageUrl}
           alt={product.name}
           fill
+          unoptimized
           onError={() => setImgError(true)}
           className="object-cover transition duration-500 group-hover:scale-105"
           sizes="(min-width: 1024px) 300px, 50vw"

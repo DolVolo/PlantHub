@@ -110,6 +110,7 @@ export default function ProductDetailPage() {
             src={imgError ? "/plant-placeholder.svg" : product.imageUrl}
             alt={product.name}
             fill
+            unoptimized
             onError={() => setImgError(true)}
             className="object-cover"
             sizes="(min-width: 1024px) 50vw, 100vw"

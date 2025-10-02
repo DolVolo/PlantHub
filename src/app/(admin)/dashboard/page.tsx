@@ -270,7 +270,7 @@ export default function SellerDashboardPage() {
                 value={form.name}
                 onChange={(event) => setForm((prev) => ({ ...prev, name: event.target.value }))}
                 placeholder="ชื่อที่ลูกค้าจดจำได้"
-                className="rounded-2xl border border-emerald-200 px-4 py-2 text-sm focus:border-emerald-400 focus:outline-none"
+                className="rounded-2xl border border-emerald-200 bg-white px-4 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-emerald-400 focus:outline-none"
               />
             </label>
             <label className="flex flex-col gap-2 text-sm text-emerald-900/80">
@@ -279,7 +279,7 @@ export default function SellerDashboardPage() {
                 value={form.scientificName}
                 onChange={(event) => setForm((prev) => ({ ...prev, scientificName: event.target.value }))}
                 placeholder="Scientific name"
-                className="rounded-2xl border border-emerald-200 px-4 py-2 text-sm focus:border-emerald-400 focus:outline-none"
+                className="rounded-2xl border border-emerald-200 bg-white px-4 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-emerald-400 focus:outline-none"
               />
             </label>
           </div>
@@ -291,7 +291,7 @@ export default function SellerDashboardPage() {
               onChange={(event) => setForm((prev) => ({ ...prev, description: event.target.value }))}
               placeholder="บอกเล่าจุดเด่น วิธีดูแล และข้อแนะนำ"
               rows={4}
-              className="rounded-2xl border border-emerald-200 px-4 py-2 text-sm focus:border-emerald-400 focus:outline-none"
+              className="rounded-2xl border border-emerald-200 bg-white px-4 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-emerald-400 focus:outline-none"
             />
           </label>
           <div className="grid gap-4 md:grid-cols-2">
@@ -303,7 +303,7 @@ export default function SellerDashboardPage() {
                 min={0}
                 value={form.price}
                 onChange={(event) => setForm((prev) => ({ ...prev, price: Number(event.target.value) }))}
-                className="rounded-2xl border border-emerald-200 px-4 py-2 text-sm focus:border-emerald-400 focus:outline-none"
+                className="rounded-2xl border border-emerald-200 bg-white px-4 py-2 text-sm text-gray-900 focus:border-emerald-400 focus:outline-none"
               />
             </label>
             <label className="flex flex-col gap-2 text-sm text-emerald-900/80">
@@ -314,7 +314,7 @@ export default function SellerDashboardPage() {
                 min={0}
                 value={form.inStock}
                 onChange={(event) => setForm((prev) => ({ ...prev, inStock: Number(event.target.value) }))}
-                className="rounded-2xl border border-emerald-200 px-4 py-2 text-sm focus:border-emerald-400 focus:outline-none"
+                className="rounded-2xl border border-emerald-200 bg-white px-4 py-2 text-sm text-gray-900 focus:border-emerald-400 focus:outline-none"
               />
             </label>
           </div>
@@ -324,7 +324,7 @@ export default function SellerDashboardPage() {
               <select
                 value={form.category}
                 onChange={(event) => setForm((prev) => ({ ...prev, category: event.target.value as TreeCategory }))}
-                className="rounded-2xl border border-emerald-200 px-4 py-2 text-sm focus:border-emerald-400 focus:outline-none"
+                className="rounded-2xl border border-emerald-200 bg-white px-4 py-2 text-sm text-gray-900 focus:border-emerald-400 focus:outline-none"
               >
                 {categoryOptions.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -338,7 +338,7 @@ export default function SellerDashboardPage() {
               <select
                 value={form.careLevel}
                 onChange={(event) => setForm((prev) => ({ ...prev, careLevel: event.target.value as TreeProduct["careLevel"] }))}
-                className="rounded-2xl border border-emerald-200 px-4 py-2 text-sm focus:border-emerald-400 focus:outline-none"
+                className="rounded-2xl border border-emerald-200 bg-white px-4 py-2 text-sm text-gray-900 focus:border-emerald-400 focus:outline-none"
               >
                 {careLevels.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -352,7 +352,7 @@ export default function SellerDashboardPage() {
               <select
                 value={form.light}
                 onChange={(event) => setForm((prev) => ({ ...prev, light: event.target.value as TreeProduct["light"] }))}
-                className="rounded-2xl border border-emerald-200 px-4 py-2 text-sm focus:border-emerald-400 focus:outline-none"
+                className="rounded-2xl border border-emerald-200 bg-white px-4 py-2 text-sm text-gray-900 focus:border-emerald-400 focus:outline-none"
               >
                 <option value="low">แสงน้อย</option>
                 <option value="medium">แสงรำไร</option>
