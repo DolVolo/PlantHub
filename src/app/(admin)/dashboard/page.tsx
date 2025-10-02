@@ -403,12 +403,14 @@ export default function SellerDashboardPage() {
                   </div>
                 </div>
                 <input
-                  type="url"
+                  type="text"
                   required
                   value={form.imageUrl}
                   onChange={(event) => setForm((prev) => ({ ...prev, imageUrl: event.target.value }))}
                   placeholder="หรือใส่ลิงก์รูปภาพ (https://...)"
-                  className="w-full rounded-2xl border border-emerald-200 bg-white px-4 py-2 text-sm focus:border-emerald-400 focus:outline-none"
+                  pattern="https?://.+"
+                  title="กรุณาใส่ URL ที่ขึ้นต้นด้วย http:// หรือ https://"
+                  className="w-full rounded-2xl border border-emerald-200 bg-white px-4 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-emerald-400 focus:outline-none"
                 />
                 {form.imageUrl && (
                   <div className="rounded-2xl border border-emerald-100 p-3">
@@ -418,6 +420,7 @@ export default function SellerDashboardPage() {
                         alt="ตัวอย่างรูปสินค้า"
                         fill
                         className="rounded-xl object-cover"
+                        unoptimized
                         onError={(e) => {
                           e.currentTarget.src = "https://via.placeholder.com/150?text=Invalid+Image";
                         }}
