@@ -403,11 +403,12 @@ export default function SellerDashboardPage() {
                   </div>
                 </div>
                 <input
+                  type="url"
                   required
                   value={form.imageUrl}
                   onChange={(event) => setForm((prev) => ({ ...prev, imageUrl: event.target.value }))}
                   placeholder="หรือใส่ลิงก์รูปภาพ (https://...)"
-                  className="w-full rounded-2xl border border-emerald-200 px-4 py-2 text-sm focus:border-emerald-400 focus:outline-none"
+                  className="w-full rounded-2xl border border-emerald-200 bg-white px-4 py-2 text-sm focus:border-emerald-400 focus:outline-none"
                 />
                 {form.imageUrl && (
                   <div className="rounded-2xl border border-emerald-100 p-3">

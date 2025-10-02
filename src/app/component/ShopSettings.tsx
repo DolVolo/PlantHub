@@ -292,10 +292,11 @@ export function ShopSettings({ ownerId }: ShopSettingsProps) {
                   </div>
                 </div>
                 <input
+                  type="url"
                   value={form.imageUrl}
                   onChange={(e) => setForm((prev) => ({ ...prev, imageUrl: e.target.value }))}
                   placeholder="หรือใส่ลิงก์รูปภาพ (https://...)"
-                  className="w-full rounded-2xl border border-emerald-200 px-4 py-2 text-sm focus:border-emerald-400 focus:outline-none"
+                  className="w-full rounded-2xl border border-emerald-200 bg-white px-4 py-2 text-sm focus:border-emerald-400 focus:outline-none"
                 />
                 {form.imageUrl && (
                   <div className="rounded-2xl border border-emerald-100 p-3">
