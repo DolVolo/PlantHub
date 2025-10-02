@@ -233,7 +233,8 @@ export default function SellerDashboardPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || "ไม่สามารถอัปโหลดรูปภาพได้");
+        const errorMsg = data.details ? `${data.message}: ${data.details}` : data.message;
+        throw new Error(errorMsg || "ไม่สามารถอัปโหลดรูปภาพได้");
       }
 
       setForm((prev) => ({ ...prev, imageUrl: data.url }));
@@ -241,7 +242,8 @@ export default function SellerDashboardPage() {
       event.target.value = ""; // Clear input for next upload
     } catch (error) {
       console.error("อัปโหลดรูปภาพไม่สำเร็จ", error);
-      setFormError(error instanceof Error ? error.message : "ไม่สามารถอัปโหลดรูปภาพได้");
+      const errorMessage = error instanceof Error ? error.message : "ไม่สามารถอัปโหลดรูปภาพได้";
+      setFormError(errorMessage);
       event.target.value = ""; // Clear input
     } finally {
       setUploadingImage(false);
