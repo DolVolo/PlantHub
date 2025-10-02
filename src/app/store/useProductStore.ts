@@ -13,7 +13,8 @@ interface ProductState {
   error?: string;
   fetchProducts: (options?: { force?: boolean }) => Promise<void>;
   addProduct: (product: TreeProduct) => Promise<TreeProduct>;
-  updateProduct: (id: string, updates: Partial<TreeProduct>) => void;
+  updateProduct: (id: string, updates: Partial<TreeProduct>) => Promise<TreeProduct>;
+  deleteProduct: (id: string) => Promise<void>;
   getProductBySlug: (slug: string) => TreeProduct | undefined;
 }
 
@@ -48,18 +49,32 @@ export const useProductStore = create<ProductState>()(
         throw error;
       }
     },
-    updateProduct: (id, updates) => {
-      set((state) => ({
-        products: state.products.map((product) =>
-          product.id === id
-            ? {
-                ...product,
-                ...updates,
-                deliveryOptions: updates.deliveryOptions ?? product.deliveryOptions,
-              }
-            : product,
-        ),
-      }));
+    updateProduct: async (id, updates) => {
+      try {
+        const response = await axios.put<TreeProduct>(`/api/products/${id}`, updates);
+        set((state) => ({
+          products: state.products.map((product) =>
+            product.id === id ? response.data : product
+          ),
+        }));
+        return response.data;
+      } catch (error) {
+        const message = error instanceof Error ? error.message : "ไม่สามารถอัปเดตสินค้าได้";
+        set({ error: message });
+        throw error;
+      }
+    },
+    deleteProduct: async (id) => {
+      try {
+        await axios.delete(`/api/products/${id}`);
+        set((state) => ({
+          products: state.products.filter((product) => product.id !== id),
+        }));
+      } catch (error) {
+        const message = error instanceof Error ? error.message : "ไม่สามารถลบสินค้าได้";
+        set({ error: message });
+        throw error;
+      }
     },
     getProductBySlug: (slug: string) => {
       const { products } = get();

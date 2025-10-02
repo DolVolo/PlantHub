@@ -48,8 +48,9 @@ const defaultForm: NewProductForm = {
 
 export default function SellerDashboardPage() {
   const { user } = useAuth();
-  const { products, addProduct, status, error: productError, fetchProducts } = useProducts();
+  const { products, addProduct, updateProduct, deleteProduct, status, error: productError, fetchProducts } = useProducts();
   const [form, setForm] = useState<NewProductForm>(defaultForm);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
@@ -88,45 +89,110 @@ export default function SellerDashboardPage() {
       return;
     }
 
-    const slug = form.name.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)+/g, "");
-
-    const newProduct: TreeProduct = {
-      id: `${user.id}-${Date.now()}`,
-      slug,
-      name: form.name,
-      scientificName: form.scientificName || form.name,
-      description: form.description,
-      price: form.price,
-      inStock: form.inStock,
-      heightRangeCm: [80, 120],
-      category: form.category,
-      tags: ["seller"],
-      imageUrl: form.imageUrl,
-      seller: {
-        id: user.id,
-        name: user.name,
-        location: "ร้านใหม่",
-        rating: 5,
-        totalSales: 0,
-      },
-      rating: 5,
-      reviews: 0,
-      deliveryOptions: [
-        { method: "pickup", price: 0, description: "รับที่หน้าร้าน" },
-        { method: "ems", price: 50, description: "จัดส่ง EMS มาตรฐาน" },
-      ],
-      careLevel: form.careLevel,
-      light: form.light,
-      water: form.water,
-    };
-
     try {
-      await addProduct(newProduct);
-      setSuccess("เพิ่มสินค้าใหม่เรียบร้อยแล้ว");
+      if (editingId) {
+        // Update existing product
+        await updateProduct(editingId, {
+          name: form.name,
+          scientificName: form.scientificName || form.name,
+          description: form.description,
+          price: form.price,
+          inStock: form.inStock,
+          category: form.category,
+          imageUrl: form.imageUrl,
+          careLevel: form.careLevel,
+          light: form.light,
+          water: form.water,
+        });
+        setSuccess("แก้ไขสินค้าเรียบร้อยแล้ว");
+        setEditingId(null);
+      } else {
+        // Create new product
+        const slug = form.name.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)+/g, "");
+
+        const newProduct: TreeProduct = {
+          id: `${user.id}-${Date.now()}`,
+          slug,
+          name: form.name,
+          scientificName: form.scientificName || form.name,
+          description: form.description,
+          price: form.price,
+          inStock: form.inStock,
+          heightRangeCm: [80, 120],
+          category: form.category,
+          tags: ["seller"],
+          imageUrl: form.imageUrl,
+          seller: {
+            id: user.id,
+            name: user.name,
+            location: "ร้านใหม่",
+            rating: 5,
+            totalSales: 0,
+          },
+          rating: 5,
+          reviews: 0,
+          deliveryOptions: [
+            { method: "pickup", price: 0, description: "รับที่หน้าร้าน" },
+            { method: "ems", price: 50, description: "จัดส่ง EMS มาตรฐาน" },
+          ],
+          careLevel: form.careLevel,
+          light: form.light,
+          water: form.water,
+        };
+
+        await addProduct(newProduct);
+        setSuccess("เพิ่มสินค้าใหม่เรียบร้อยแล้ว");
+      }
       setForm(defaultForm);
     } catch (error) {
       console.error("เพิ่มสินค้าไม่สำเร็จ", error);
-      setFormError("ไม่สามารถเพิ่มสินค้าได้ กรุณาลองใหม่อีกครั้ง");
+      setFormError(editingId ? "ไม่สามารถแก้ไขสินค้าได้ กรุณาลองใหม่อีกครั้ง" : "ไม่สามารถเพิ่มสินค้าได้ กรุณาลองใหม่อีกครั้ง");
+    }
+  };
+
+  const handleEdit = (product: TreeProduct) => {
+    setEditingId(product.id);
+    setForm({
+      name: product.name,
+      scientificName: product.scientificName,
+      description: product.description,
+      price: product.price,
+      inStock: product.inStock,
+      category: product.category,
+      careLevel: product.careLevel,
+      light: product.light,
+      water: product.water,
+      imageUrl: product.imageUrl,
+    });
+    setFormError(null);
+    setSuccess(null);
+    // Scroll to top of form
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleCancelEdit = () => {
+    setEditingId(null);
+    setForm(defaultForm);
+    setFormError(null);
+    setSuccess(null);
+  };
+
+  const handleDelete = async (productId: string) => {
+    if (!confirm("คุณแน่ใจหรือไม่ว่าต้องการลบสินค้านี้?")) {
+      return;
+    }
+
+    try {
+      await deleteProduct(productId);
+      setSuccess("ลบสินค้าเรียบร้อยแล้ว");
+      // Clear form if deleting the product being edited
+      if (editingId === productId) {
+        setEditingId(null);
+        setForm(defaultForm);
+      }
+    } catch (error) {
+      console.error("ลบสินค้าไม่สำเร็จ", error);
+      setFormError("ไม่สามารถลบสินค้าได้ กรุณาลองใหม่อีกครั้ง");
     }
   };
 
@@ -263,14 +329,14 @@ export default function SellerDashboardPage() {
               type="submit"
               className="rounded-full bg-emerald-500 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-600"
             >
-              เพิ่มสินค้า
+              {editingId ? "อัปเดตสินค้า" : "เพิ่มสินค้า"}
             </button>
             <button
               type="button"
-              onClick={() => setForm(defaultForm)}
+              onClick={editingId ? handleCancelEdit : () => setForm(defaultForm)}
               className="rounded-full border border-emerald-200 px-5 py-2.5 text-sm font-medium text-emerald-700 transition hover:bg-emerald-50"
             >
-              ล้างฟอร์ม
+              {editingId ? "ยกเลิก" : "ล้างฟอร์ม"}
             </button>
           </div>
           {formError ? <p className="text-sm text-red-600">{formError}</p> : null}
@@ -318,9 +384,29 @@ export default function SellerDashboardPage() {
               <ul className="space-y-3">
                 {sellerProducts.map((product) => (
                   <li key={product.id} className="rounded-2xl border border-emerald-100 p-3">
-                    <p className="font-medium text-emerald-900">{product.name}</p>
-                    <p>ราคา ฿{product.price.toLocaleString()} • สต็อก {product.inStock}</p>
-                    <p className="text-xs text-emerald-900/60">Slug: {product.slug}</p>
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1">
+                        <p className="font-medium text-emerald-900">{product.name}</p>
+                        <p>ราคา ฿{product.price.toLocaleString()} • สต็อก {product.inStock}</p>
+                        <p className="text-xs text-emerald-900/60">Slug: {product.slug}</p>
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => handleEdit(product)}
+                          className="rounded-lg border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-medium text-blue-700 transition hover:bg-blue-100"
+                        >
+                          แก้ไข
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDelete(product.id)}
+                          className="rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-medium text-red-700 transition hover:bg-red-100"
+                        >
+                          ลบ
+                        </button>
+                      </div>
+                    </div>
                   </li>
                 ))}
               </ul>

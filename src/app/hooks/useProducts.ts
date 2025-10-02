@@ -10,6 +10,7 @@ export function useProducts(autoFetch: boolean = true) {
   const fetchProducts = useProductStore((state) => state.fetchProducts);
   const addProduct = useProductStore((state) => state.addProduct);
   const updateProduct = useProductStore((state) => state.updateProduct);
+  const deleteProduct = useProductStore((state) => state.deleteProduct);
   const getProductBySlug = useProductStore((state) => state.getProductBySlug);
 
   useEffect(() => {
@@ -27,6 +28,7 @@ export function useProducts(autoFetch: boolean = true) {
     fetchProducts,
     addProduct,
     updateProduct,
+    deleteProduct,
     getProductBySlug,
   } as const;
 }
