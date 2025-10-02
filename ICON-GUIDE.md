@@ -8,18 +8,18 @@ The Vercel icon was appearing because Next.js uses **file-based icon conventions
 
 ### 1. **Replaced `src/app/favicon.ico`**
    - Old: Vercel's default icon (25KB)
-   - New: Your PlantHub icon (1.4MB PNG)
+   - New: Your PlantHub logo.png (1.4MB PNG)
    - **This is the primary icon file Next.js uses**
 
-### 2. **Added `src/app/icon.tsx`**
-   - Generates dynamic `/icon` route (256×256px)
-   - Creates beautiful gradient background with 🌱 emoji
+### 2. **Added `src/app/icon.png`**
+   - Copy of `public/image/logo.png`
+   - Generates `/icon` route
    - Used for modern browsers and PWA icons
 
-### 3. **Added `src/app/apple-icon.tsx`**
-   - Generates `/apple-icon` route (180×180px)
+### 3. **Added `src/app/apple-icon.png`**
+   - Copy of `public/image/logo.png`
+   - Generates `/apple-icon` route
    - Optimized for iOS home screen icons
-   - Same design as main icon, adjusted size
 
 ### 4. **Simplified `src/app/layout.tsx`**
    - Removed manual `<head>` icon links
@@ -34,8 +34,10 @@ The Vercel icon was appearing because Next.js uses **file-based icon conventions
 
 Next.js looks for icons in this order:
 1. `src/app/favicon.ico` → `/favicon.ico` ⭐ **Main icon**
-2. `src/app/icon.tsx` or `icon.png` → `/icon` (multiple sizes)
-3. `src/app/apple-icon.tsx` or `apple-icon.png` → `/apple-icon`
+2. `src/app/icon.png` → `/icon` (automatic optimization)
+3. `src/app/apple-icon.png` → `/apple-icon`
+
+All three files now use your `public/image/logo.png`
 
 ## 🚀 How It Works on Vercel
 
@@ -59,17 +61,15 @@ Cmd+Shift+R (Mac)
 
 ## 🎨 Customizing Icons
 
-To change the icon design, edit:
-- **`src/app/icon.tsx`** - Main icon appearance
-- **`src/app/apple-icon.tsx`** - iOS icon appearance
-- **`src/app/favicon.ico`** - Legacy browser support
-
-Example: Change emoji in `icon.tsx`:
-```tsx
-<div style={{ fontSize: 160 }}>
-  🌿  {/* Change this emoji */}
-</div>
-```
+To change the icon, simply update your logo:
+1. Replace **`public/image/logo.png`** with your new logo
+2. Copy it to the icon files:
+   ```powershell
+   Copy-Item "public\image\logo.png" "src\app\favicon.ico" -Force
+   Copy-Item "public\image\logo.png" "src\app\icon.png" -Force
+   Copy-Item "public\image\logo.png" "src\app\apple-icon.png" -Force
+   ```
+3. Rebuild your project: `npm run build`
 
 ## ✅ Verification
 
