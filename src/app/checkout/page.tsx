@@ -42,6 +42,13 @@ export default function CheckoutPage() {
     }
   }, [user]);
 
+  // Set showNewAddressForm to true if user has no saved addresses
+  useEffect(() => {
+    if (user && savedPaymentInfoList.length === 0 && !isLoadingSavedInfo) {
+      setShowNewAddressForm(true);
+    }
+  }, [user, savedPaymentInfoList, isLoadingSavedInfo]);
+
   const fetchSavedPaymentInfo = async () => {
     if (!user) return;
     
@@ -164,7 +171,20 @@ export default function CheckoutPage() {
 
       // Save payment info if requested
       if (saveThisInfo && user && showNewAddressForm && newInfoName.trim()) {
+        console.log("Attempting to save payment info...", {
+          saveThisInfo,
+          hasUser: !!user,
+          showNewAddressForm,
+          newInfoName: newInfoName.trim(),
+        });
         await handleSavePaymentInfo();
+      } else {
+        console.log("Skipping payment info save:", {
+          saveThisInfo,
+          hasUser: !!user,
+          showNewAddressForm,
+          newInfoName: newInfoName.trim(),
+        });
       }
 
       setOrderSuccess(true);
@@ -308,7 +328,7 @@ export default function CheckoutPage() {
                   }
                   setForm((prev) => ({ ...prev, phone: formatted }));
                 }}
-                placeholder="0967517739 หรือ 096-751-7739"
+                placeholder="0XX-XXX-XXXX"
                 pattern="0[0-9]{2}-[0-9]{3}-[0-9]{4}"
                 maxLength={12}
                 className="rounded-2xl border border-emerald-200 bg-white px-4 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-emerald-400 focus:outline-none"
