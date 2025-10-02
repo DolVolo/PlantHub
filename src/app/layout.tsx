@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   title: "PlantHub | ศูนย์รวมต้นไม้และดอกไม้",
   description:
     "เลือกชมต้นไม้และดอกไม้คุณภาพดี พร้อมโปรโมชั่นและบริการจัดส่งถึงมือคุณที่ PlantHub",
-  metadataBase: new URL("https://example.com"),
+  metadataBase: new URL("https://planthub.example.com"),
   keywords: [
     "PlantHub",
     "ต้นไม้",
@@ -22,12 +22,16 @@ export const metadata: Metadata = {
     "จัดสวน",
     "สวน",
     "ปลูกต้นไม้",
+    "ซื้อต้นไม้",
+    "ต้นไม้หายาก",
+    "ต้นไม้ในร่ม",
+    "บอนไซ",
   ],
   openGraph: {
     title: "PlantHub | ศูนย์รวมต้นไม้และดอกไม้",
     description:
       "ค้นพบต้นไม้และดอกไม้หลากหลายสายพันธุ์ พร้อมโปรโมชั่นสุดคุ้มจาก PlantHub",
-    url: "https://example.com",
+    url: "https://planthub.example.com",
     siteName: "PlantHub",
     locale: "th_TH",
     type: "website",

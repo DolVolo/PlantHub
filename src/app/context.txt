@@ -1,0 +1,49 @@
+i want to make shop that sell tree our web name is PlantHub
+user will see card list of tree like shoping on amazon,shopee
+when click each card it will show info price and can select amount and have add to basket /before add to basket user need to login first
+on basket อมูลปลอดภัย
+ข้อมูลลูกค้า
+กรุณากรอกข้อมูลสำหรับการจัดส่งและติดต่อ - ข้อมูลของคุณจะถูกเก็บเป็นความลับและใช้เพื่อการจัดส่งเท่านั้น
+
+ชื่อ *
+ชื่อ
+นามสกุล *
+นามสกุล
+ที่อยู่ *
+ที่อยู่สำหรับจัดส่ง
+เบอร์โทร *
+0XX-XXX-XXXX
+วันที่ซื้อ *
+
+10/01/2025
+จัดส่งรวดเร็ว
+การจัดส่งและชำระเงิน
+เลือกวิธีการรับสินค้าและชำระเงินที่สะดวกสำหรับคุณ - รับประกันความปลอดภัยในทุกขั้นตอน
+
+วิธีการรับสินค้า
+
+รับเอง
+รับที่กองบริหารงานทรัพย์สินฯ อาคารอิงคศรีกสิการ ชั้น 1
+
+จัดส่ง EMS
+ส่งชิ้นแรก 50 บาท ชิ้นต่อไป +10 บาท
+ช่องทางชำระเงิน
+
+โอนผ่านธนาคาร
+กรุงไทย XXX-X-XXXXX-X
+
+PromptPay
+0XX-XXX-XXXX
+
+เงินสด
+สำหรับการรับเองเท่านั้น
+รูปภาพสลิปการชำระเงิน
+คลิกเพื่ออัพโหลดสลิป
+รองรับไฟล์ JPG, PNG ขนาดไม่เกิน 5MB
+พร้อมส่งคำสั่งซื้อแล้วใช่หรือไม่?
+กรุณาตรวจสอบข้อมูลให้ถูกต้องก่อนส่งคำสั่งซื้อ
+
+ส่งคำสั่งซื้อ
+ล้างข้อมูล
+//user can create own shop to add item and see sell info ,can be seller by add card info picture stock of that tree in shop ,and user can edit stock card on shop
+//on home page will have search and select keyword,select type,category
