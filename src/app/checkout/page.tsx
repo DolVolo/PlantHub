@@ -124,7 +124,8 @@ export default function CheckoutPage() {
 
   const totalCost = subtotal + estimatedShipping;
   const isLoadingProducts = status === "idle" || status === "loading";
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setOrderError(null);
 
@@ -138,13 +139,29 @@ export default function CheckoutPage() {
       return;
     }
 
-    // Save payment info if requested
-    if (saveThisInfo && user && showNewAddressForm) {
-      handleSavePaymentInfo();
-    }
+    try {
+      // Submit order to API (this will decrease stock)
+      await axios.post("/api/orders", {
+        items,
+        customerDetails: form,
+        userId: user?.id || null,
+      });
 
-    setOrderSuccess(true);
-    clearBasket();
+      // Save payment info if requested
+      if (saveThisInfo && user && showNewAddressForm) {
+        await handleSavePaymentInfo();
+      }
+
+      setOrderSuccess(true);
+      clearBasket();
+    } catch (error) {
+      console.error("Order submission error:", error);
+      if (axios.isAxiosError(error)) {
+        setOrderError(error.response?.data?.message || "เกิดข้อผิดพลาดในการส่งคำสั่งซื้อ");
+      } else {
+        setOrderError("เกิดข้อผิดพลาดในการส่งคำสั่งซื้อ");
+      }
+    }
   };
 
   return (
@@ -258,11 +275,25 @@ export default function CheckoutPage() {
               เบอร์โทร *
               <input
                 required
+                type="tel"
                 value={form.phone}
-                onChange={(event) => setForm((prev) => ({ ...prev, phone: event.target.value }))}
-                placeholder="0XX-XXX-XXXX"
+                onChange={(event) => {
+                  // Remove all non-digits
+                  const digits = event.target.value.replace(/\D/g, '');
+                  // Format as XXX-XXX-XXXX
+                  let formatted = digits;
+                  if (digits.length >= 3) {
+                    formatted = digits.slice(0, 3) + '-' + digits.slice(3);
+                  }
+                  if (digits.length >= 6) {
+                    formatted = digits.slice(0, 3) + '-' + digits.slice(3, 6) + '-' + digits.slice(6, 10);
+                  }
+                  setForm((prev) => ({ ...prev, phone: formatted }));
+                }}
+                placeholder="0967517739 หรือ 096-751-7739"
                 pattern="0[0-9]{2}-[0-9]{3}-[0-9]{4}"
-                className="rounded-2xl border border-emerald-200 px-4 py-2 text-sm focus:border-emerald-400 focus:outline-none"
+                maxLength={12}
+                className="rounded-2xl border border-emerald-200 bg-white px-4 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-emerald-400 focus:outline-none"
               />
             </label>
             <label className="flex flex-col gap-2 text-sm text-emerald-900/80">

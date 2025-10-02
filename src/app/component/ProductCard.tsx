@@ -61,9 +61,15 @@ export function ProductCard({ product }: ProductCardProps) {
           <p className="mt-3 line-clamp-2 text-sm text-emerald-900/80">{product.description}</p>
         </div>
         <div className="mt-auto flex items-center justify-between text-xs text-emerald-900/70">
-          <div>
+          <div className="space-y-1">
             <p>สต็อก {product.inStock} ชุด</p>
             <p>🌤️ แสง: {product.light === "bright" ? "สว่าง" : product.light === "medium" ? "รำไร" : "แสงน้อย"}</p>
+            {product.views !== undefined && product.views > 0 && (
+              <p className="flex items-center gap-1">
+                <span>👁️</span>
+                <span>{product.views.toLocaleString()} ครั้ง</span>
+              </p>
+            )}
           </div>
           <button
             onClick={handleAddToBasket}

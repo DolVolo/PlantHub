@@ -46,6 +46,7 @@ export interface TreeProduct {
   seller: SellerProfile;
   rating: number;
   reviews: number;
+  views?: number;
   featured?: boolean;
   deliveryOptions: Array<{
     method: DeliveryMethod;

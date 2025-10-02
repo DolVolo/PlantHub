@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import axios from "axios";
 import { LoginDialog } from "../../component/dialogs";
 import { useAuth } from "../../hooks/useAuth";
 import { useBasket } from "../../hooks/useBasket";
@@ -32,6 +33,14 @@ export default function ProductDetailPage() {
     // Fetch shops to show shop information
     fetchShops().catch((error) => console.error("Failed to fetch shops", error));
   }, [fetchProducts, fetchShops, slug, status]);
+
+  // Increment view count when product is loaded
+  useEffect(() => {
+    if (product && product.id) {
+      axios.post(`/api/products/${product.id}/view`)
+        .catch((error) => console.error("Failed to increment view:", error));
+    }
+  }, [product?.id]);
 
   useEffect(() => {
     if (!slug) return;

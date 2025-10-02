@@ -31,7 +31,8 @@ export default function SettingsPage() {
     if (activeTab === "account" && user) {
       fetchPaymentInfo();
     }
-  }, [activeTab, user]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab, user?.id]);
 
   const fetchPaymentInfo = async () => {
     if (!user) return;
