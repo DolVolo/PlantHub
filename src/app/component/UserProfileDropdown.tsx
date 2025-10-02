@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import type { AuthUser } from "../types";
 
@@ -20,23 +20,28 @@ const menuItems = [
 
 export function UserProfileDropdown({ user, onLogout }: UserProfileDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
-  // Close dropdown when clicking outside
+  // Close panel when pressing Escape key
   useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && isOpen) {
         setIsOpen(false);
       }
-    }
+    };
+    window.addEventListener("keydown", handleEscape);
+    return () => window.removeEventListener("keydown", handleEscape);
+  }, [isOpen]);
 
+  // Prevent body scroll when panel is open
+  useEffect(() => {
     if (isOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
     }
-
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
+      document.body.style.overflow = "unset";
     };
   }, [isOpen]);
 
@@ -71,7 +76,7 @@ export function UserProfileDropdown({ user, onLogout }: UserProfileDropdownProps
   };
 
   return (
-    <div className="relative" ref={dropdownRef}>
+    <>
       {/* Profile Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
@@ -103,14 +108,50 @@ export function UserProfileDropdown({ user, onLogout }: UserProfileDropdownProps
         </svg>
       </button>
 
-      {/* Dropdown Menu */}
-      {isOpen && (
-        <div className="absolute right-0 z-50 mt-2 w-64 rounded-2xl border border-emerald-100 bg-white shadow-lg">
+      {/* Backdrop Overlay */}
+      <div
+        className={`fixed inset-0 z-50 bg-black/50 backdrop-blur-sm transition-opacity duration-300 ${
+          isOpen ? "opacity-100" : "pointer-events-none opacity-0"
+        }`}
+        onClick={() => setIsOpen(false)}
+      />
+
+      {/* Sliding Panel */}
+      <div
+        className={`fixed right-0 top-0 z-50 h-full w-full bg-white shadow-2xl transition-transform duration-300 ease-in-out sm:w-[400px] lg:w-[25vw] ${
+          isOpen ? "translate-x-0" : "translate-x-full"
+        }`}
+      >
+        <div className="flex h-full flex-col">
+          {/* Header */}
+          <div className="flex items-center justify-between border-b border-emerald-100 bg-emerald-50/50 px-6 py-4">
+            <h2 className="text-xl font-semibold text-emerald-900">โปรไฟล์</h2>
+            <button
+              onClick={() => setIsOpen(false)}
+              className="rounded-full p-2 text-emerald-700 transition hover:bg-emerald-100"
+              aria-label="Close profile"
+            >
+              <svg
+                className="h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+          </div>
+
           {/* User Info Section */}
-          <div className="border-b border-emerald-100 p-4">
-            <div className="flex items-center gap-3">
+          <div className="border-b border-emerald-100 bg-gradient-to-br from-emerald-50 to-white px-6 py-6">
+            <div className="flex items-center gap-4">
               {user.profileImageUrl ? (
-                <div className="relative h-10 w-10 overflow-hidden rounded-full bg-emerald-500">
+                <div className="relative h-16 w-16 overflow-hidden rounded-full bg-emerald-500 ring-4 ring-emerald-100">
                   <Image
                     src={user.profileImageUrl}
                     alt={user.name}
@@ -120,51 +161,55 @@ export function UserProfileDropdown({ user, onLogout }: UserProfileDropdownProps
                   />
                 </div>
               ) : (
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500 text-white font-semibold">
+                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500 text-white text-xl font-bold ring-4 ring-emerald-100">
                   {getInitials(user.name)}
                 </div>
               )}
               <div className="flex-1 overflow-hidden">
-                <p className="font-semibold text-emerald-900 truncate">{user.name}</p>
-                <p className="text-xs text-emerald-600">{getRoleDisplay(user.role)}</p>
-                <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                <p className="font-bold text-lg text-emerald-900 truncate">{user.name}</p>
+                <div className="mt-1 inline-flex items-center rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-700">
+                  {getRoleDisplay(user.role)}
+                </div>
+                <p className="mt-1 text-sm text-gray-600 truncate">{user.email}</p>
               </div>
             </div>
           </div>
 
           {/* Menu Items */}
-          <div className="p-2">
-            {menuItems.map((item) => {
-              // Hide seller-only items for non-sellers
-              if (item.roleRequired && user.role !== item.roleRequired) {
-                return null;
-              }
+          <div className="flex-1 overflow-y-auto px-4 py-4">
+            <nav className="space-y-1">
+              {menuItems.map((item) => {
+                // Hide seller-only items for non-sellers
+                if (item.roleRequired && user.role !== item.roleRequired) {
+                  return null;
+                }
 
-              return (
-                <button
-                  key={item.href}
-                  onClick={() => handleMenuClick(item.href)}
-                  className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm text-gray-700 transition hover:bg-emerald-50 hover:text-emerald-700"
-                >
-                  <span className="text-lg">{item.icon}</span>
-                  <span>{item.label}</span>
-                </button>
-              );
-            })}
+                return (
+                  <button
+                    key={item.href}
+                    onClick={() => handleMenuClick(item.href)}
+                    className="flex w-full items-center gap-4 rounded-xl px-4 py-3 text-left text-gray-700 transition hover:bg-emerald-50 hover:text-emerald-700"
+                  >
+                    <span className="text-2xl">{item.icon}</span>
+                    <span className="font-medium">{item.label}</span>
+                  </button>
+                );
+              })}
+            </nav>
           </div>
 
           {/* Logout Button */}
-          <div className="border-t border-emerald-100 p-2">
+          <div className="border-t border-emerald-100 px-4 py-4">
             <button
               onClick={handleLogout}
-              className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm text-red-600 transition hover:bg-red-50"
+              className="flex w-full items-center gap-4 rounded-xl px-4 py-3 text-left text-red-600 transition hover:bg-red-50 font-medium"
             >
-              <span className="text-lg">🚪</span>
+              <span className="text-2xl">🚪</span>
               <span>ออกจากระบบ</span>
             </button>
           </div>
         </div>
-      )}
-    </div>
+      </div>
+    </>
   );
 }
