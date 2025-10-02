@@ -12,8 +12,8 @@ const USE_FIRESTORE = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID ? true : false
 /**
  * GET /api/products/[id] - Get single product
  */
-export async function GET(request: Request, { params }: { params: { id: string } }) {
-  const { id } = params;
+export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
 
   try {
     if (USE_FIRESTORE) {
@@ -34,8 +34,8 @@ export async function GET(request: Request, { params }: { params: { id: string }
 /**
  * PUT /api/products/[id] - Update product
  */
-export async function PUT(request: Request, { params }: { params: { id: string } }) {
-  const { id } = params;
+export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const updates = (await request.json()) as Partial<TreeProduct>;
 
   try {
@@ -55,8 +55,8 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 /**
  * DELETE /api/products/[id] - Delete product
  */
-export async function DELETE(request: Request, { params }: { params: { id: string } }) {
-  const { id } = params;
+export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
 
   try {
     if (USE_FIRESTORE) {
