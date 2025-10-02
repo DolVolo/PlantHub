@@ -52,20 +52,26 @@ export default function CheckoutPage() {
   const fetchSavedPaymentInfo = async () => {
     if (!user) return;
     
+    console.log("[Checkout] Fetching payment info for user:", user.id);
     setIsLoadingSavedInfo(true);
     try {
       const response = await axios.get<SavedPaymentInfo[]>(
         `/api/payment-info?userId=${user.id}`
       );
+      console.log("[Checkout] Received payment info:", response.data);
       setSavedPaymentInfoList(response.data);
       
       // Auto-select default if available
       const defaultInfo = response.data.find((info) => info.isDefault);
       if (defaultInfo && !selectedPaymentInfoId) {
+        console.log("[Checkout] Auto-selecting default:", defaultInfo.id);
         handleSelectSavedInfo(defaultInfo.id);
       }
     } catch (error) {
-      console.error("Failed to fetch saved payment info:", error);
+      console.error("[Checkout] Failed to fetch saved payment info:", error);
+      if (axios.isAxiosError(error)) {
+        console.error("[Checkout] Response:", error.response?.data);
+      }
     } finally {
       setIsLoadingSavedInfo(false);
     }

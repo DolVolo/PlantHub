@@ -37,14 +37,19 @@ export default function SettingsPage() {
   const fetchPaymentInfo = async () => {
     if (!user) return;
     
+    console.log("[Settings] Fetching payment info for user:", user.id);
     setIsLoadingPaymentInfo(true);
     try {
       const response = await axios.get<SavedPaymentInfo[]>(
         `/api/payment-info?userId=${user.id}`
       );
+      console.log("[Settings] Received payment info:", response.data);
       setSavedPaymentInfoList(response.data);
     } catch (err) {
-      console.error("Failed to fetch payment info:", err);
+      console.error("[Settings] Failed to fetch payment info:", err);
+      if (axios.isAxiosError(err)) {
+        console.error("[Settings] Response:", err.response?.data);
+      }
       setError("ไม่สามารถโหลดข้อมูลที่บันทึกไว้ได้");
     } finally {
       setIsLoadingPaymentInfo(false);

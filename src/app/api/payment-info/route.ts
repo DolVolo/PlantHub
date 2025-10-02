@@ -8,6 +8,8 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get("userId");
 
+    console.log("[GET Payment Info] Fetching for userId:", userId);
+
     if (!userId) {
       return NextResponse.json(
         { message: "User ID is required" },
@@ -15,16 +17,27 @@ export async function GET(request: Request) {
       );
     }
 
+    // Query without orderBy to avoid index issues
     const snapshot = await adminFirestore()
       .collection("paymentInfo")
       .where("userId", "==", userId)
-      .orderBy("createdAt", "desc")
       .get();
+
+    console.log("[GET Payment Info] Found documents:", snapshot.size);
 
     const paymentInfoList: SavedPaymentInfo[] = snapshot.docs.map((doc) => ({
       id: doc.id,
       ...doc.data(),
     })) as SavedPaymentInfo[];
+
+    // Sort in memory by createdAt
+    paymentInfoList.sort((a, b) => {
+      const dateA = new Date(a.createdAt || 0).getTime();
+      const dateB = new Date(b.createdAt || 0).getTime();
+      return dateB - dateA; // Descending order
+    });
+
+    console.log("[GET Payment Info] Returning:", paymentInfoList.length, "items");
 
     return NextResponse.json(paymentInfoList);
   } catch (error) {
@@ -42,7 +55,10 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { userId, name, firstName, lastName, address, phone, isDefault } = body;
 
+    console.log("[POST Payment Info] Received data:", { userId, name, firstName, lastName, address, phone, isDefault });
+
     if (!userId || !name || !firstName || !lastName || !address || !phone) {
+      console.log("[POST Payment Info] Missing required fields");
       return NextResponse.json(
         { message: "All fields are required" },
         { status: 400 }
@@ -51,6 +67,7 @@ export async function POST(request: Request) {
 
     // If this is set as default, unset all other defaults for this user
     if (isDefault) {
+      console.log("[POST Payment Info] Unsetting other defaults for user:", userId);
       const snapshot = await adminFirestore()
         .collection("paymentInfo")
         .where("userId", "==", userId)
@@ -62,6 +79,7 @@ export async function POST(request: Request) {
         batch.update(doc.ref, { isDefault: false });
       });
       await batch.commit();
+      console.log("[POST Payment Info] Unset", snapshot.size, "defaults");
     }
 
     const now = new Date().toISOString();
@@ -77,9 +95,13 @@ export async function POST(request: Request) {
       updatedAt: now,
     };
 
+    console.log("[POST Payment Info] Saving to Firestore:", paymentInfoData);
+
     const docRef = await adminFirestore()
       .collection("paymentInfo")
       .add(paymentInfoData);
+
+    console.log("[POST Payment Info] Saved with ID:", docRef.id);
 
     const savedPaymentInfo: SavedPaymentInfo = {
       id: docRef.id,
